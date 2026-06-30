@@ -11,7 +11,7 @@
 - 2026 국민대 AI Workflow 해커톤. 로컬 시연(배포 없음).
 - 아키텍처: **프론트엔드와 백엔드를 분리**한 2개 앱(별도 프로세스·포트, CORS).
   - 프론트엔드: Vite + React + TypeScript (SPA). API는 백엔드 서버를 호출.
-  - 백엔드: API 서버 + SQLite(Prisma) + LLM 1개. *(백엔드 스택/포트는 BE-1·BE-2 확정 필요 — FE는 `:8080` 가정)*
+  - 백엔드: **Express + TypeScript + Prisma(SQLite)** + LLM 어댑터, 포트 **`:8080`** (FE 가정과 일치, Vite `:5173` CORS 허용).
 - LLM은 `llm.ts` 어댑터 뒤로 격리. 키 없으면 mock 모드로 동작.
 - 프론트·백 사이의 유일한 접점은 **데이터 계약(`backend/prisma/schema.prisma`) + API 계약(`docs/api-contract.md`)**. 양쪽 응답/타입은 이 계약과 정확히 일치해야 한다.
 
