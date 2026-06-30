@@ -54,3 +54,33 @@ export function rangeOverlapsMonth(
   const monthEnd = new Date(year, month + 1, 0);
   return range.start.getTime() <= monthEnd.getTime() && range.end.getTime() >= monthStart.getTime();
 }
+
+export function getItemsOnDate(items: ActionBoardItem[], dateKey: string): ActionBoardItem[] {
+  const date = parseDateKey(dateKey);
+  return items.filter((item) => {
+    const range = getItemDateRange(item);
+    return range !== null && isDateInRange(date, range);
+  });
+}
+
+/** 해당 날짜가 일정 구간에서 어떤 의미인지 (시작 / 마감 / 진행 중). */
+export function getDateMilestone(item: ActionBoardItem, dateKey: string): string {
+  const range = getItemDateRange(item);
+  if (!range) return '일정 없음';
+
+  const startKey = toDateKey(range.start);
+  const endKey = toDateKey(range.end);
+
+  if (dateKey === startKey && dateKey === endKey) return '당일';
+  if (dateKey === startKey) return '시작일';
+  if (dateKey === endKey) return '마감일';
+  return '진행 중';
+}
+
+const WEEKDAY_KO = ['일', '월', '화', '수', '목', '금', '토'];
+
+export function formatDateKeyLabel(dateKey: string): string {
+  const date = parseDateKey(dateKey);
+  const weekday = WEEKDAY_KO[date.getDay()];
+  return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일 (${weekday})`;
+}
