@@ -5,9 +5,13 @@ import { z } from "zod";
  * mock 모드와 live 모드의 출력 스키마는 동일하다.
  */
 export const MinutesSchema = z.object({
-  agenda: z.array(z.string()), // 안건[]
-  discussion: z.string(), // 논의요약
-  decisions: z.array(z.string()), // 결정사항[]
+  // 회의 전체를 2~4문장으로 요약(전사 원문 복붙 금지). FE "회의 요약" 카드.
+  summary: z.string().default(""),
+  // 핵심 논의·결정을 실행 가능한 bullet로. FE "핵심 내용" 카드.
+  keyPoints: z.array(z.string()).default([]),
+  agenda: z.array(z.string()).default([]), // 안건[]
+  discussion: z.string().default(""), // 논의요약
+  decisions: z.array(z.string()).default([]), // 결정사항[]
 });
 
 export const GeneratedActionItemSchema = z.object({

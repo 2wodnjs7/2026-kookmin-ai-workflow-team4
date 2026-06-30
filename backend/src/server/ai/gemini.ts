@@ -35,6 +35,8 @@ const GeminiResponseSchema = z.object({
   attendees: z.array(z.string()).optional().default([]),
   minutes: z
     .object({
+      summary: z.string().optional().default(""),
+      keyPoints: z.array(z.string()).optional().default([]),
       agenda: z.array(z.string()).optional().default([]),
       discussion: z.string().optional().default(""),
       decisions: z.array(z.string()).optional().default([]),
@@ -94,6 +96,8 @@ export async function generateGemini(
     title: input.title ?? (g.title.trim() || "회의록 (제목 미정)"),
     attendees: input.attendees ?? g.attendees,
     minutes: {
+      summary: g.minutes.summary,
+      keyPoints: g.minutes.keyPoints,
       agenda: g.minutes.agenda,
       discussion: g.minutes.discussion,
       decisions: g.minutes.decisions,

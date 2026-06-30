@@ -44,7 +44,7 @@
 
 ```
 Meeting    { id, title, date, attendees[], rawText,
-             minutes(JSON: 안건[], 논의요약, 결정사항[]), createdAt }
+             minutes(JSON: 요약, 핵심내용[], 안건[], 논의요약, 결정사항[]), createdAt }
 ActionItem { id, meetingId, content, assignee, dueDate,
              status('todo'|'done'), createdAt }
 ```
