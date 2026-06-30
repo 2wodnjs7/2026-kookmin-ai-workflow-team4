@@ -267,6 +267,59 @@
     color: var(--color-switch-icon-light);
   }
 
+  /* Modal — radial blur fade (no hard overlay edge) */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 1rem;
+    padding-top: 4rem;
+  }
+
+  @media (min-width: 640px) {
+    .modal-overlay {
+      padding-top: 5rem;
+    }
+  }
+
+  .modal-overlay__blur {
+    position: absolute;
+    inset: -24px;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    mask-image: radial-gradient(ellipse 88% 78% at 50% 26%, #000 22%, transparent 74%);
+    -webkit-mask-image: radial-gradient(ellipse 88% 78% at 50% 26%, #000 22%, transparent 74%);
+    pointer-events: none;
+  }
+
+  .modal-overlay__vignette {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      ellipse 72% 62% at 50% 22%,
+      color-mix(in srgb, var(--color-text-primary) 18%, transparent) 0%,
+      transparent 68%
+    );
+    pointer-events: none;
+  }
+
+  .modal-panel {
+    position: relative;
+    z-index: 1;
+    background: color-mix(in srgb, var(--color-glass-bg-strong) 92%, transparent);
+    backdrop-filter: blur(calc(var(--glass-blur) + 6px));
+    -webkit-backdrop-filter: blur(calc(var(--glass-blur) + 6px));
+    border: 1px solid color-mix(in srgb, var(--color-glass-highlight) 55%, transparent);
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--color-glass-border) 35%, transparent) inset,
+      0 28px 72px -24px color-mix(in srgb, var(--color-primary) 22%, transparent),
+      0 12px 40px -20px var(--color-shadow);
+    border-radius: 1.25rem;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .page-enter-fade-up,
     .page-enter-slide-right,
