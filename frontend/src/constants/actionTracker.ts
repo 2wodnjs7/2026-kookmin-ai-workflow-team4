@@ -12,10 +12,13 @@ export interface ActionBoardItem {
   id: string;
   content: string;
   assignee: string | null;
+  /** FE UI 전용(비영속). API ActionItem에 없음 — #19 연동 시 전송·저장하지 않음. 영속 필요 시 BE 계약 확장 합의. */
   startDate: string | null;
   dueDate: string | null;
+  /** FE UI 전용(비영속). API ActionItem에 없음 — #19 연동 시 전송·저장하지 않음. */
   memo: string;
   status: ActionBoardStatus;
+  /** FE 표시용 회의 제목. API는 meetingId + meeting{id,title,date} — #19 연동 시 매핑 필요. */
   meeting: string;
 }
 
