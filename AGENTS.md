@@ -8,13 +8,39 @@
 
 회의 지식 허브(Meeting Intelligence Hub). 회의 전사본을 붙여넣으면 AI가 ①구조화 회의록 생성 ②액션아이템 추적 ③과거 회의 검색을 제공하는 팀용 서비스.
 
-- 2026 국민대 AI Workflow 해커톤. 로컬 `npm run dev` 시연(배포 없음).
-- 스택: Next.js(풀스택 TypeScript) + SQLite(Prisma) + LLM 1개.
+- 2026 국민대 AI Workflow 해커톤. 로컬 시연(배포 없음).
+- 아키텍처: **프론트엔드와 백엔드를 분리**한 2개 앱(별도 프로세스·포트, CORS).
+  - 프론트엔드: Vite + React + TypeScript (SPA). API는 백엔드 서버를 호출.
+  - 백엔드: API 서버 + SQLite(Prisma) + LLM 1개. *(백엔드 스택/포트는 BE-1·BE-2 확정 필요 — FE는 `:8080` 가정)*
 - LLM은 `llm.ts` 어댑터 뒤로 격리. 키 없으면 mock 모드로 동작.
+- 프론트·백 사이의 유일한 접점은 **데이터 계약(`backend/prisma/schema.prisma`) + API 계약(`docs/api-contract.md`)**. 양쪽 응답/타입은 이 계약과 정확히 일치해야 한다.
+
+## 프로젝트 구조 (프론트/백 분리 — 팀 합의)
+
+```
+/
+├── backend/                 # API 서버 (BE-1, BE-2)
+│   ├── prisma/schema.prisma # 데이터 계약 (단일 소스)
+│   ├── src/server/
+│   │   ├── ai/              # llm.ts 어댑터·프롬프트 — BE-1
+│   │   ├── meetings/        # BE-1
+│   │   ├── actions/         # BE-2
+│   │   └── search/          # BE-2
+│   └── (api 라우트)/        # /api/meetings(BE-1), /api/actions·/api/search(BE-2)
+├── frontend/                # Vite + React SPA — FE
+│   └── src/
+│       ├── pages/           # 화면 3페이지(생성/트래커/검색)
+│       ├── components/      # 공통 컴포넌트
+│       └── api/             # API 클라이언트(백엔드 호출)
+└── docs/                    # 팀 문서 (api-contract.md 등)
+```
+
+> 아래 "분담"의 소유 경로는 위 `backend/`·`frontend/` 기준이다.
+> FE 세부 규칙(라우팅·테마·API 호출 컨벤션)은 [frontend/AGENTS.md](frontend/AGENTS.md) 참고.
 
 ## 데이터 계약 (팀이 합의한 단일 공유 스키마)
 
-`prisma/schema.prisma`가 유일한 공유 합의 파일이다. 이 모양을 임의로 바꾸지 말 것(변경은 PR로 합의).
+`backend/prisma/schema.prisma`가 유일한 공유 합의 파일이다. 이 모양을 임의로 바꾸지 말 것(변경은 PR로 합의).
 
 ```
 Meeting    { id, title, date, attendees[], rawText,
@@ -29,9 +55,9 @@ API 응답은 위 스키마와 정확히 일치해야 한다. mock 응답과 실
 
 | 역할 | 담당 | 소유 |
 |---|---|---|
-| BE-1 | 회의록 생성 엔진 (LLM·AWS 격리) | `src/server/ai/*`, `src/server/meetings/*`, `app/api/meetings/*` |
-| BE-2 | 트래커·검색 + 공통 셋업(스키마·마이그레이션·시드) | `src/server/actions/*`, `src/server/search/*`, `app/api/actions/*`, `app/api/search/*` |
-| FE | 화면 3페이지(생성/트래커/검색) | `app/(ui)/*`, `src/components/*`, `src/lib/apiClient.ts` |
+| BE-1 | 회의록 생성 엔진 (LLM·AWS 격리) | `backend/src/server/ai/*`, `backend/src/server/meetings/*`, 백엔드 `/api/meetings` 라우트 |
+| BE-2 | 트래커·검색 + 공통 셋업(스키마·마이그레이션·시드) | `backend/src/server/actions/*`, `backend/src/server/search/*`, 백엔드 `/api/actions`·`/api/search` 라우트 |
+| FE | 화면 3페이지(생성/트래커/검색) | `frontend/src/pages/*`, `frontend/src/components/*`, `frontend/src/api/*` |
 
 ## 작업 규칙
 
@@ -51,4 +77,4 @@ API 응답은 위 스키마와 정확히 일치해야 한다. mock 응답과 실
 
 1. [README.md](README.md) — 제품 개요·실행법
 2. [docs/team-workflow.md](docs/team-workflow.md) — git 협업 규칙
-3. `prisma/schema.prisma` — 데이터 계약 (생성되면)
+3. `backend/prisma/schema.prisma` — 데이터 계약 (단일 공유 스키마)
