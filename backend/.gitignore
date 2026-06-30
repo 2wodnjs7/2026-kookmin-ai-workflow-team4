@@ -1,0 +1,16 @@
+node_modules/
+dist/
+
+# env / secrets
+.env
+.env.*
+!.env.example
+
+# SQLite dev DB
+*.db
+*.db-journal
+prisma/dev.db
+prisma/*.db
+
+# logs
+*.log
