@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Select from '@/components/ui/Select';
+import DatePicker from '@/components/ui/DatePicker';
 import { ACTION_STATUS_COLUMNS, type ActionBoardItem } from '@/constants/actionTracker';
 import type { ActionItemDraft } from '@/stores/actionTrackerStore';
 
@@ -133,40 +134,20 @@ export default function ActionItemModal({
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="action-start-date" className="text-sm font-medium text-text-secondary">
-                시작일
-              </label>
-              <input
-                id="action-start-date"
-                type="date"
-                className="field-control"
-                value={draft.startDate ?? ''}
-                onChange={(e) =>
-                  setDraft((prev) => ({
-                    ...prev,
-                    startDate: e.target.value || null,
-                  }))
-                }
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="action-due-date" className="text-sm font-medium text-text-secondary">
-                마감일
-              </label>
-              <input
-                id="action-due-date"
-                type="date"
-                className="field-control"
-                value={draft.dueDate ?? ''}
-                onChange={(e) =>
-                  setDraft((prev) => ({
-                    ...prev,
-                    dueDate: e.target.value || null,
-                  }))
-                }
-              />
-            </div>
+            <DatePicker
+              label="시작일"
+              id="action-start-date"
+              value={draft.startDate}
+              onChange={(startDate) => setDraft((prev) => ({ ...prev, startDate }))}
+              clearable
+            />
+            <DatePicker
+              label="마감일"
+              id="action-due-date"
+              value={draft.dueDate}
+              onChange={(dueDate) => setDraft((prev) => ({ ...prev, dueDate }))}
+              clearable
+            />
           </div>
 
           <Select
