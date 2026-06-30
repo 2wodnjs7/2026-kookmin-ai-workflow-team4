@@ -71,6 +71,14 @@ export interface UpdateActionItemRequest {
   dueDate?: string | null;
 }
 
+export interface CreateActionItemRequest {
+  content: string;
+  meetingId: string;
+  status?: 'todo' | 'in_progress' | 'done' | 'on_hold';
+  assignee?: string | null;
+  dueDate?: string | null;
+}
+
 export interface GenerateActionsRequest {
   meetingId: string;
   mode?: 'one' | 'all';
