@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom';
 import Header from '@/components/header/Header';
 import PageTransition from '@/components/layout/PageTransition';
+import ScrollToTopButton from '@/components/layout/ScrollToTopButton';
 
 export default function AppLayout() {
   return (
@@ -16,6 +17,7 @@ export default function AppLayout() {
           담록 Damrok · 2026 Kookmin AI Workflow Team 4
         </div>
       </footer>
+      <ScrollToTopButton />
     </div>
   );
 }
