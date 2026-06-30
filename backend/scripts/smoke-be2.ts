@@ -195,21 +195,21 @@ async function main() {
     const delMiss = await fetch(`${base}/api/actions/nonexistent-id`, { method: "DELETE" });
     assert.equal(delMiss.status, 404, "없는 액션 DELETE는 404");
 
-    // 17) POST /api/actions/generate mode=all → 201, 추출·저장(중복 제외)
-    const genRes = await fetch(`${base}/api/actions/generate`, {
+    // 17) POST /api/actions/generate mode=one → 201, 새 액션 1건만 저장(기존 content 제외)
+    const genOne = await fetch(`${base}/api/actions/generate`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ meetingId, mode: "all" }),
+      body: JSON.stringify({ meetingId, mode: "one" }),
     });
-    assert.equal(genRes.status, 201, "generate(all)는 201");
-    assert.equal(genRes.headers.get("x-llm-mode"), "mock", "X-LLM-Mode 헤더(mock)");
-    const gen = (await genRes.json()) as Record<string, any>;
-    assert.ok(Array.isArray(gen.actions) && gen.actions.length > 0, "actions 추출됨");
-    assert.equal(gen.generated, gen.actions.length, "generated == actions.length");
-    assert.ok(gen.actions[0].id && gen.actions[0].meetingId === meetingId, "bare ActionItem + meetingId");
-    assert.equal(gen.actions[0].status, "todo", "신규 액션 status=todo");
+    assert.equal(genOne.status, 201, "generate(one)는 201");
+    assert.equal(genOne.headers.get("x-llm-mode"), "mock", "X-LLM-Mode 헤더(mock)");
+    const one = (await genOne.json()) as Record<string, any>;
+    assert.equal(one.generated, 1, "mode=one은 1건만 생성");
+    assert.equal(one.actions.length, 1, "actions 1건");
+    assert.ok(one.actions[0].id && one.actions[0].meetingId === meetingId, "bare ActionItem + meetingId");
+    assert.equal(one.actions[0].status, "todo", "신규 액션 status=todo");
 
-    // 18) 재호출(all) → 중복 content뿐이면 200 + generated=0
+    // 18) 재호출(all) → 추출 결과가 모두 기존 content면 200 + generated=0(중복 제외)
     const genAgain = await fetch(`${base}/api/actions/generate`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
