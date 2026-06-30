@@ -13,7 +13,9 @@
     "typecheck": "tsc --noEmit",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
-    "smoke": "tsx scripts/smoke.ts"
+    "db:seed": "tsx prisma/seed.ts",
+    "smoke": "tsx scripts/smoke.ts",
+    "smoke:be2": "tsx scripts/smoke-be2.ts"
   },
   "dependencies": {
     "@google/genai": "^2.10.0",
