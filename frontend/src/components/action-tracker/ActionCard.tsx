@@ -1,4 +1,5 @@
 import type { ActionBoardItem } from '@/constants/actionTracker';
+import { getAssigneeColor } from '@/utils/assigneeColor';
 
 interface ActionCardProps {
   item: ActionBoardItem;
@@ -10,6 +11,8 @@ function formatDateLabel(date: string | null, fallback: string) {
 }
 
 export default function ActionCard({ item, onClick }: ActionCardProps) {
+  const assigneeColor = getAssigneeColor(item.assignee);
+
   return (
     <button
       type="button"
@@ -18,11 +21,9 @@ export default function ActionCard({ item, onClick }: ActionCardProps) {
     >
       <div className="text-sm font-medium text-text-primary">{item.content}</div>
       <div className="mt-2 flex flex-wrap gap-2 text-xs text-text-secondary">
-        {item.assignee ? (
-          <div className="rounded-full bg-bg-accent px-2 py-0.5">{item.assignee}</div>
-        ) : (
-          <div className="rounded-full bg-warning-bg px-2 py-0.5 text-warning">담당자 미정</div>
-        )}
+        <div className={`rounded-full px-2 py-0.5 ${assigneeColor.badgeBg} ${assigneeColor.badgeText}`}>
+          {item.assignee ?? '담당자 미정'}
+        </div>
         <div className="rounded-full glass px-2 py-0.5">
           시작 {formatDateLabel(item.startDate, '미정')}
         </div>
