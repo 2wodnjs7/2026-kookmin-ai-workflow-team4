@@ -4,6 +4,9 @@
   "private": true,
   "type": "module",
   "description": "회의 지식 허브 백엔드 API 서버 (Express + Prisma + SQLite)",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "start": "tsx src/index.ts",
