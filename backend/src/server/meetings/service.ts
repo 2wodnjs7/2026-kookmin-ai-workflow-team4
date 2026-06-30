@@ -1,5 +1,5 @@
 import { Prisma } from "@prisma/client";
-import { generateMeetingArtifacts } from "../ai/llm.js";
+import { generateMeetingMinutes } from "../ai/llm.js";
 import { prisma } from "../db.js";
 import { ApiError } from "../http/errors.js";
 import type { CreateMeetingInput, ListMeetingsQuery } from "./schemas.js";
@@ -8,16 +8,20 @@ const meetingWithActions = {
   include: { actionItems: { orderBy: { createdAt: "asc" } } },
 } satisfies Prisma.MeetingDefaultArgs;
 
-/** POST /api/meetings — 전사본 → LLM 생성 → 저장 → 생성된 회의 반환. */
+/**
+ * POST /api/meetings — 전사본 → LLM으로 회의록(minutes)만 생성 → 저장 → 생성된 회의 반환.
+ * 액션아이템은 여기서 자동 저장하지 않는다(#28). 응답의 `actionItems`는 항상 빈 배열이며,
+ * 액션 생성은 별도 `POST /api/actions/generate`(BE-2)에서 클라이언트 요청 시에만 수행한다.
+ */
 export async function createMeeting(input: CreateMeetingInput) {
-  const artifacts = await generateMeetingArtifacts({
+  const result = await generateMeetingMinutes({
     rawText: input.rawText,
     title: input.title,
     attendees: input.attendees,
   });
 
-  const title = input.title ?? artifacts.title;
-  const attendees = input.attendees ?? artifacts.attendees;
+  const title = input.title ?? result.title;
+  const attendees = input.attendees ?? result.attendees;
   const date = input.date ? new Date(input.date) : new Date();
 
   return prisma.meeting.create({
@@ -26,15 +30,7 @@ export async function createMeeting(input: CreateMeetingInput) {
       date,
       attendees: attendees as unknown as Prisma.InputJsonValue,
       rawText: input.rawText,
-      minutes: artifacts.minutes as unknown as Prisma.InputJsonValue,
-      actionItems: {
-        create: artifacts.actionItems.map((item) => ({
-          content: item.content,
-          assignee: item.assignee,
-          dueDate: parseDate(item.dueDate),
-          status: "todo",
-        })),
-      },
+      minutes: result.minutes as unknown as Prisma.InputJsonValue,
     },
     ...meetingWithActions,
   });
@@ -79,10 +75,4 @@ export async function getMeetingById(id: string) {
     throw new ApiError("NOT_FOUND", `id가 ${id}인 회의를 찾을 수 없습니다.`);
   }
   return meeting;
-}
-
-function parseDate(value: string | null): Date | null {
-  if (!value) return null;
-  const d = new Date(value);
-  return Number.isNaN(d.getTime()) ? null : d;
 }

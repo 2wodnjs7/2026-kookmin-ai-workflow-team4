@@ -7,7 +7,7 @@ import { CreateMeetingSchema, ListMeetingsQuerySchema } from "./schemas.js";
 
 export const meetingsRouter = Router();
 
-// POST /api/meetings — 전사본으로 회의록·액션아이템 생성/저장
+// POST /api/meetings — 전사본으로 회의록(minutes)만 생성/저장 (액션아이템 제외, #28)
 meetingsRouter.post(
   "/",
   asyncHandler(async (req, res) => {
