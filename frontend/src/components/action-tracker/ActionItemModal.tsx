@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Select from '@/components/ui/Select';
@@ -34,6 +34,7 @@ export default function ActionItemModal({
   onDelete,
 }: ActionItemModalProps) {
   const [draft, setDraft] = useState<ActionItemDraft>(EMPTY_DRAFT);
+  const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -51,6 +52,14 @@ export default function ActionItemModal({
     }
     setDraft(EMPTY_DRAFT);
   }, [open, mode, item]);
+
+  useEffect(() => {
+    if (!open) return;
+    const frame = requestAnimationFrame(() => {
+      panelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [open, mode, item?.id]);
 
   useEffect(() => {
     if (!open) return;
@@ -83,6 +92,7 @@ export default function ActionItemModal({
       <div className="modal-overlay__blur" aria-hidden="true" />
       <div className="modal-overlay__vignette" aria-hidden="true" />
       <div
+        ref={panelRef}
         className="modal-panel flex max-h-[calc(100vh-5rem)] w-full max-w-lg flex-col gap-4 overflow-y-auto p-6"
         role="dialog"
         aria-modal="true"
