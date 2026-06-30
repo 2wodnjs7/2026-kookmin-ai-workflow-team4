@@ -1,9 +1,17 @@
 import { Router } from "express";
 import { ZodError } from "zod";
+import { getLlmMode } from "../ai/llm.js";
 import { ApiError, asyncHandler } from "../http/errors.js";
-import { createAction, deleteAction, listActions, updateAction } from "./service.js";
+import {
+  createAction,
+  deleteAction,
+  generateActions,
+  listActions,
+  updateAction,
+} from "./service.js";
 import {
   CreateActionSchema,
+  GenerateActionsSchema,
   ListActionsQuerySchema,
   UpdateActionSchema,
 } from "./schemas.js";
@@ -27,6 +35,18 @@ actionsRouter.post(
     const input = parse(CreateActionSchema, req.body);
     const created = await createAction(input);
     res.status(201).json(created);
+  }),
+);
+
+// POST /api/actions/generate — 회의 전사본에서 액션아이템 LLM 추출·저장
+// (':id' 라우트보다 앞에 등록해 '/generate'가 :id로 잡히지 않게 한다.)
+actionsRouter.post(
+  "/generate",
+  asyncHandler(async (req, res) => {
+    const input = parse(GenerateActionsSchema, req.body);
+    const result = await generateActions(input);
+    res.setHeader("X-LLM-Mode", getLlmMode());
+    res.status(result.generated > 0 ? 201 : 200).json(result);
   }),
 );
 

@@ -53,3 +53,11 @@ export const UpdateActionSchema = z
   });
 
 export type UpdateActionInput = z.infer<typeof UpdateActionSchema>;
+
+/** POST /api/actions/generate 요청. meetingId 필수, mode 기본 'all'. */
+export const GenerateActionsSchema = z.object({
+  meetingId: z.string().trim().min(1, { message: "meetingId는 필수입니다." }),
+  mode: z.enum(["one", "all"]).default("all"),
+});
+
+export type GenerateActionsInput = z.infer<typeof GenerateActionsSchema>;

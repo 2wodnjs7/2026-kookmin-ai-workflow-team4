@@ -1,8 +1,10 @@
 import { Prisma } from "@prisma/client";
+import { generateActionItems } from "../ai/llm.js";
 import { prisma } from "../db.js";
 import { ApiError } from "../http/errors.js";
 import type {
   CreateActionInput,
+  GenerateActionsInput,
   ListActionsQuery,
   UpdateActionInput,
 } from "./schemas.js";
@@ -60,6 +62,73 @@ export async function createAction(input: CreateActionInput) {
     },
     ...actionWithMeeting,
   });
+}
+
+/**
+ * POST /api/actions/generate — 회의 전사본에서 액션아이템을 LLM으로 추출해 저장한다(#28 §2).
+ * - meetingId가 가리키는 회의가 없으면 404.
+ * - 이미 해당 회의에 저장된 content는 제외(중복 미생성).
+ * - mode='one'이면 새 항목 1건만, 'all'이면 남은 전체 저장.
+ * - 추출/저장할 새 항목이 없으면 generated=0.
+ * - LLM 실패는 generateActionItems가 ApiError("LLM_ERROR") → 502로 변환된다.
+ */
+export async function generateActions(input: GenerateActionsInput) {
+  const meeting = await prisma.meeting.findUnique({
+    where: { id: input.meetingId },
+    select: { id: true, rawText: true, title: true, attendees: true },
+  });
+  if (!meeting) {
+    throw new ApiError(
+      "NOT_FOUND",
+      `meetingId가 ${input.meetingId}인 회의를 찾을 수 없습니다.`,
+    );
+  }
+
+  // 이미 저장된 액션 content(중복 제외용).
+  const existingActions = await prisma.actionItem.findMany({
+    where: { meetingId: input.meetingId },
+    select: { content: true },
+  });
+  const seen = new Set(existingActions.map((a) => a.content.trim()));
+
+  // 회의 메타로 LLM 액션 추출(어댑터는 BE-1 소유). attendees는 Json → string[]로 사용.
+  const attendees = Array.isArray(meeting.attendees)
+    ? (meeting.attendees as unknown[]).filter((v): v is string => typeof v === "string")
+    : undefined;
+  const extracted = await generateActionItems({
+    rawText: meeting.rawText,
+    title: meeting.title,
+    attendees,
+  });
+
+  // 기존 + 추출 결과 내 중복 content 모두 제외.
+  const fresh = extracted.filter((item) => {
+    const content = item.content.trim();
+    if (!content || seen.has(content)) return false;
+    seen.add(content);
+    return true;
+  });
+
+  const toCreate = input.mode === "one" ? fresh.slice(0, 1) : fresh;
+  if (toCreate.length === 0) {
+    return { actions: [], generated: 0 };
+  }
+
+  const actions = await prisma.$transaction(
+    toCreate.map((item) =>
+      prisma.actionItem.create({
+        data: {
+          meetingId: input.meetingId,
+          content: item.content.trim(),
+          assignee: item.assignee ?? null,
+          dueDate: item.dueDate ? new Date(item.dueDate) : null,
+          status: "todo",
+        },
+      }),
+    ),
+  );
+
+  return { actions, generated: actions.length };
 }
 
 /** PATCH /api/actions/:id — 부분 수정(상태 토글 등). 없으면 404. */
