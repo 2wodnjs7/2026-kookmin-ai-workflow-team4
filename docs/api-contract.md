@@ -44,7 +44,9 @@
   "content": "검색 API 엔드포인트 설계",
   "assignee": "이두리",        // 불명확하면 "[담당자 확인 필요]"
   "dueDate": "2026-07-07T00:00:00.000Z", // 불명확하면 null (UI 표기 "미정")
-  "status": "todo",            // 'todo' | 'done'
+  "startDate": "2026-07-01T00:00:00.000Z", // 시작일(선택). 없으면 null
+  "status": "todo",            // 'todo' | 'in_progress' | 'done' | 'on_hold'
+  "memo": "OpenAPI 초안부터 작성", // 자유 메모(선택). 없으면 null
   "createdAt": "2026-06-30T09:23:50.000Z"
 }
 ```
@@ -236,7 +238,7 @@ DB에 저장한 뒤, 생성된 회의 1건을 반환한다.
 ## 4. 소유 경계 메모
 
 - 이 문서의 `/api/meetings*`(생성·조회)는 **BE-1** 소유다.
-- 액션아이템 트래커(`/api/actions*`, 아래 §5·§6)와 검색(`/api/search*`, 아래 §7)은 **BE-2** 소유다.
+- 액션아이템 트래커(`/api/actions*`, 아래 §5·§6·§6.1·§6.2)와 검색(`/api/search*`, 아래 §7)은 **BE-2** 소유다.
   엔티티 스키마는 본 문서 상단의 정의를 그대로 따른다.
 - FE(`frontend/`)는 `frontend/src/api/*`에서 위 계약을 타입으로 옮겨 백엔드를 호출한다.
 
@@ -251,7 +253,7 @@ DB에 저장한 뒤, 생성된 회의 1건을 반환한다.
 
 | 파라미터 | 타입 | 기본 | 설명 |
 |---|---|---|---|
-| `status` | `'todo' \| 'done'` | — | 상태 필터 |
+| `status` | `'todo' \| 'in_progress' \| 'done' \| 'on_hold'` | — | 상태 필터 |
 | `assignee` | string | — | 담당자 정확 일치 필터 |
 | `meetingId` | string | — | 특정 회의의 액션아이템만 |
 | `limit` | number | 50 | 페이지 크기(1~200) |
@@ -268,7 +270,9 @@ DB에 저장한 뒤, 생성된 회의 1건을 반환한다.
       "content": "검색 API 엔드포인트 설계",
       "assignee": "이두리",
       "dueDate": "2026-07-07T00:00:00.000Z",
+      "startDate": "2026-07-01T00:00:00.000Z",
       "status": "todo",
+      "memo": "OpenAPI 초안부터 작성",
       "createdAt": "2026-06-30T09:23:50.000Z",
       "meeting": {
         "id": "clxxxxxxxxxxxxxx",
@@ -297,10 +301,12 @@ DB에 저장한 뒤, 생성된 회의 1건을 반환한다.
 
 | 필드 | 타입 | 설명 |
 |---|---|---|
-| `status` | `'todo' \| 'done'` | 상태 |
+| `status` | `'todo' \| 'in_progress' \| 'done' \| 'on_hold'` | 상태 |
 | `content` | string | 내용(빈 문자열 불가) |
 | `assignee` | string \| null | 담당자. `null`이면 미지정으로 비운다 |
 | `dueDate` | string(ISO8601) \| null | 기한. `null`이면 "미정"으로 비운다 |
+| `startDate` | string(ISO8601) \| null | 시작일. `null`이면 비운다 |
+| `memo` | string \| null | 자유 메모. `null`이면 비운다 |
 
 ```json
 // PATCH /api/actions/clyyyyyyyyyyyyyy
@@ -328,6 +334,56 @@ DB에 저장한 뒤, 생성된 회의 1건을 반환한다.
 | 상태 | code | 상황 |
 |---|---|---|
 | `400` | `VALIDATION_ERROR` | 수정할 필드 없음 / `status` 허용값 위반 / 형식 오류 |
+| `404` | `NOT_FOUND` | 해당 id의 액션아이템 없음 |
+
+---
+
+## 6.1 POST /api/actions
+
+액션아이템 1건을 수동 생성한다(트래커 「액션 추가」). **회의에 속해야 하므로 `meetingId`가 필수**다.
+
+### 요청 본문
+
+| 필드 | 타입 | 필수 | 설명 |
+|---|---|---|---|
+| `content` | string | ✅ | 내용(빈 문자열 불가) |
+| `meetingId` | string | ✅ | 소속 회의 id(존재해야 함) |
+| `status` | `'todo' \| 'in_progress' \| 'done' \| 'on_hold'` | ❌(기본 `todo`) | 상태 |
+| `assignee` | string \| null | ❌ | 담당자 |
+| `dueDate` | string(ISO8601) \| null | ❌ | 기한 |
+| `startDate` | string(ISO8601) \| null | ❌ | 시작일 |
+| `memo` | string \| null | ❌ | 자유 메모 |
+
+```json
+// POST /api/actions
+{ "content": "검색 결과 하이라이트", "meetingId": "clxxxxxxxxxxxxxx", "assignee": "FE", "dueDate": "2026-07-15T00:00:00.000Z", "status": "in_progress" }
+```
+
+### 응답 `201 Created`
+
+생성된 ActionItem 1건을 `meeting{id,title,date}` 컨텍스트와 함께 반환한다(`GET /api/actions` 항목과 동일 형태).
+
+### 에러
+
+| 상태 | code | 상황 |
+|---|---|---|
+| `400` | `VALIDATION_ERROR` | `content`/`meetingId` 누락 / `status` 허용값 위반 / 형식 오류 |
+| `404` | `NOT_FOUND` | `meetingId`가 가리키는 회의 없음 |
+
+---
+
+## 6.2 DELETE /api/actions/:id
+
+액션아이템 1건을 삭제한다(하드 삭제).
+
+### 응답 `204 No Content`
+
+본문 없음.
+
+### 에러
+
+| 상태 | code | 상황 |
+|---|---|---|
 | `404` | `NOT_FOUND` | 해당 id의 액션아이템 없음 |
 
 ---

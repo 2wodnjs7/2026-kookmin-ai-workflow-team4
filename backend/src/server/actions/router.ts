@@ -1,8 +1,12 @@
 import { Router } from "express";
 import { ZodError } from "zod";
 import { ApiError, asyncHandler } from "../http/errors.js";
-import { listActions, updateAction } from "./service.js";
-import { ListActionsQuerySchema, UpdateActionSchema } from "./schemas.js";
+import { createAction, deleteAction, listActions, updateAction } from "./service.js";
+import {
+  CreateActionSchema,
+  ListActionsQuerySchema,
+  UpdateActionSchema,
+} from "./schemas.js";
 
 export const actionsRouter = Router();
 
@@ -13,6 +17,29 @@ actionsRouter.get(
     const query = parse(ListActionsQuerySchema, req.query);
     const result = await listActions(query);
     res.json(result);
+  }),
+);
+
+// POST /api/actions — 액션아이템 수동 생성(회의 선택 필수)
+actionsRouter.post(
+  "/",
+  asyncHandler(async (req, res) => {
+    const input = parse(CreateActionSchema, req.body);
+    const created = await createAction(input);
+    res.status(201).json(created);
+  }),
+);
+
+// DELETE /api/actions/:id — 액션아이템 1건 삭제
+actionsRouter.delete(
+  "/:id",
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    if (!id) {
+      throw new ApiError("VALIDATION_ERROR", "id가 필요합니다.");
+    }
+    await deleteAction(id);
+    res.status(204).end();
   }),
 );
 

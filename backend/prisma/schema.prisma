@@ -56,8 +56,12 @@ model ActionItem {
   assignee  String?
   /// 기한. 불명확하면 null로 두고 UI/문서에서는 "미정"으로 표기한다.
   dueDate   DateTime?
-  /// 상태 값: 'todo' | 'done'. SQLite enum 미지원으로 String + 앱 레벨 검증.
+  /// 시작일(선택). 캘린더 기간(시작~마감) 표시용. 불명확하면 null.
+  startDate DateTime?
+  /// 상태 값: 'todo' | 'in_progress' | 'done' | 'on_hold'. SQLite enum 미지원으로 String + 앱 레벨 검증.
   status    String   @default("todo")
+  /// 자유 메모(선택). 액션 상세/모달용. 없으면 null.
+  memo      String?
 
   createdAt DateTime @default(now())
 
