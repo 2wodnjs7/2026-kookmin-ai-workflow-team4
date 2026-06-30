@@ -10,6 +10,8 @@ interface ActionItemModalProps {
   open: boolean;
   mode: 'add' | 'edit';
   item?: ActionBoardItem;
+  title?: string;
+  submitLabel?: string;
   onClose: () => void;
   onSave: (draft: ActionItemDraft) => void | Promise<void>;
   onDelete?: (id: string) => void;
@@ -29,6 +31,8 @@ export default function ActionItemModal({
   open,
   mode,
   item,
+  title,
+  submitLabel,
   onClose,
   onSave,
   onDelete,
@@ -72,6 +76,9 @@ export default function ActionItemModal({
 
   if (!open) return null;
 
+  const modalTitle = title ?? (mode === 'add' ? '액션 아이템 추가' : '액션 아이템 수정');
+  const modalSubmitLabel = submitLabel ?? (mode === 'add' ? '추가' : '저장');
+
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     const content = draft.content.trim();
@@ -100,7 +107,7 @@ export default function ActionItemModal({
       >
         <div className="flex flex-col gap-1">
           <div id="action-item-modal-title" className="text-lg font-semibold text-text-primary">
-            {mode === 'add' ? '액션 아이템 추가' : '액션 아이템 수정'}
+            {modalTitle}
           </div>
           <div className="text-sm text-text-secondary">
             시작일·마감일·메모를 입력하고 저장하세요.
@@ -186,7 +193,7 @@ export default function ActionItemModal({
           <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
             <div className="flex gap-2">
               <Button type="submit" size="md">
-                {mode === 'add' ? '추가' : '저장'}
+                {modalSubmitLabel}
               </Button>
               <Button type="button" variant="secondary" size="md" onClick={onClose}>
                 취소

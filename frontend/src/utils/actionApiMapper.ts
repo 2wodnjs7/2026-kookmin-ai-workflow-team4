@@ -44,6 +44,19 @@ export function apiActionToBoardItem(action: ActionItemWithMeeting): ActionBoard
   };
 }
 
+export function meetingActionToBoardItem(action: ActionItem, meetingTitle: string): ActionBoardItem {
+  return {
+    id: action.id,
+    content: action.content,
+    assignee: apiAssigneeToBoard(action.assignee),
+    startDate: null,
+    dueDate: isoToDateKey(action.dueDate),
+    memo: '',
+    status: apiStatusToBoard(action.status),
+    meeting: meetingTitle,
+  };
+}
+
 export function boardDraftToPatchBody(
   draft: Partial<ActionItemDraft>,
   previous?: ActionBoardItem,

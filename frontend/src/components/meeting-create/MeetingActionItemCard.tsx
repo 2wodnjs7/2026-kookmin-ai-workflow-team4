@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom';
 import Button from '@/components/ui/Button';
 import type { ActionItem } from '@/api/types';
 import { getAssigneeColor } from '@/utils/assigneeColor';
@@ -7,6 +6,8 @@ import { isoToDateKey } from '@/utils/actionApiMapper';
 interface MeetingActionItemCardProps {
   action: ActionItem;
   meetingTitle: string;
+  added?: boolean;
+  onAdd: (action: ActionItem) => void;
 }
 
 function formatAssignee(assignee: string | null) {
@@ -14,7 +15,12 @@ function formatAssignee(assignee: string | null) {
   return assignee;
 }
 
-export default function MeetingActionItemCard({ action, meetingTitle }: MeetingActionItemCardProps) {
+export default function MeetingActionItemCard({
+  action,
+  meetingTitle,
+  added = false,
+  onAdd,
+}: MeetingActionItemCardProps) {
   const assigneeLabel = formatAssignee(action.assignee);
   const assigneeColor = getAssigneeColor(action.assignee);
 
@@ -29,13 +35,19 @@ export default function MeetingActionItemCard({ action, meetingTitle }: MeetingA
           마감 {isoToDateKey(action.dueDate) ?? '미정'}
         </div>
         <div className="rounded-full bg-primary-subtle px-2 py-0.5 text-primary">{action.status}</div>
+        {added && (
+          <div className="rounded-full bg-success/15 px-2 py-0.5 text-success">추가 완료</div>
+        )}
       </div>
       <div className="flex flex-wrap items-center gap-2">
-        <Link to={`/actions?actionId=${encodeURIComponent(action.id)}`}>
-          <Button type="button" size="sm" variant="secondary">
-            트래커에서 보기
-          </Button>
-        </Link>
+        <Button
+          type="button"
+          size="sm"
+          variant={added ? 'ghost' : 'secondary'}
+          onClick={() => onAdd(action)}
+        >
+          {added ? '다시 수정' : '액션 추가'}
+        </Button>
         <div className="text-xs text-text-muted">{meetingTitle}</div>
       </div>
     </div>

@@ -1,11 +1,13 @@
 import type { ReactNode } from 'react';
 import Card from '@/components/ui/Card';
 import MeetingActionItemCard from '@/components/meeting-create/MeetingActionItemCard';
-import type { Meeting } from '@/api/types';
+import type { ActionItem, Meeting } from '@/api/types';
 import { isoToDateKey } from '@/utils/actionApiMapper';
 
 interface MeetingResultPanelProps {
   meeting: Meeting;
+  addedActionIds?: Set<string>;
+  onAddAction: (action: ActionItem) => void;
 }
 
 function ResultSection({
@@ -24,7 +26,11 @@ function ResultSection({
   );
 }
 
-export default function MeetingResultPanel({ meeting }: MeetingResultPanelProps) {
+export default function MeetingResultPanel({
+  meeting,
+  addedActionIds,
+  onAddAction,
+}: MeetingResultPanelProps) {
   const { minutes } = meeting;
 
   return (
@@ -85,11 +91,17 @@ export default function MeetingResultPanel({ meeting }: MeetingResultPanelProps)
       {meeting.actionItems.length > 0 && (
         <ResultSection
           title={`액션 아이템 (${meeting.actionItems.length})`}
-          description="각 항목을 트래커에서 담당자·일정을 확인·수정할 수 있습니다."
+          description="담당자·일정을 확인한 뒤 트래커에 추가할 수 있습니다."
         >
           <div className="flex flex-col gap-3">
             {meeting.actionItems.map((action) => (
-              <MeetingActionItemCard key={action.id} action={action} meetingTitle={meeting.title} />
+              <MeetingActionItemCard
+                key={action.id}
+                action={action}
+                meetingTitle={meeting.title}
+                added={addedActionIds?.has(action.id)}
+                onAdd={onAddAction}
+              />
             ))}
           </div>
         </ResultSection>
