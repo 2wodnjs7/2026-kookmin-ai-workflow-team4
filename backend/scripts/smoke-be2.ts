@@ -5,7 +5,7 @@ import { prisma } from "../src/server/db.js";
 
 /**
  * BE-2(트래커·검색) 스모크 테스트. mock 모드에서 실제 HTTP 경로·에러 포맷·계약 정합을 확인한다.
- * 실행: npm run smoke:be2  (사전: npm run db:generate && npm run db:push, LLM_API_KEY 미설정 → mock)
+ * 실행: npm run smoke:be2  (사전: npm run db:generate && npm run db:push. .env에 키가 있어도 mock 강제)
  */
 const TOKEN = "스모크검색토큰BE2";
 const SAMPLE = {
@@ -15,6 +15,11 @@ const SAMPLE = {
 };
 
 async function main() {
+  // 스모크는 항상 mock 경로를 결정적으로 검증한다(.env에 키가 있어도 무시).
+  // provider는 요청 시점에 process.env를 읽으므로 여기서 지우면 mock으로 폴백된다.
+  delete process.env.GEMINI_API_KEY;
+  delete process.env.LLM_API_KEY;
+
   const server = buildApp().listen(0);
   await new Promise<void>((resolve) => server.once("listening", () => resolve()));
   const { port } = server.address() as AddressInfo;
