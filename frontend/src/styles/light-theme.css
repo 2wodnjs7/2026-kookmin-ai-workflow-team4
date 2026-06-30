@@ -49,4 +49,13 @@
   --color-mesh-1: rgba(37, 99, 235, 0.18);
   --color-mesh-2: rgba(96, 165, 250, 0.22);
   --color-mesh-3: rgba(191, 219, 254, 0.45);
+
+  /* Theme switch */
+  --color-switch-track-bg: rgba(219, 234, 254, 0.95);
+  --color-switch-track-border: rgba(37, 99, 235, 0.55);
+  --color-switch-thumb-bg: #2563eb;
+  --color-switch-thumb-border: rgba(255, 255, 255, 0.9);
+  --color-switch-icon-light: #f59e0b;
+  --color-switch-icon-dark: #64748b;
+  --color-switch-icon-active: #ffffff;
 }
