@@ -1,7 +1,7 @@
 # API 계약 (api-contract.md)
 
 > 회의 지식 허브(Meeting Intelligence Hub)의 회의 관련 API 계약 초안입니다.
-> 이 문서는 `backend/prisma/schema.prisma`(데이터 계약)와 **정확히 일치**해야 합니다.
+> 이 문서는 `prisma/schema.prisma`(데이터 계약)와 **정확히 일치**해야 합니다.
 > 변경은 임의로 하지 말고 PR로 합의합니다(AGENTS.md 규칙).
 
 ## 0. 공통 규칙

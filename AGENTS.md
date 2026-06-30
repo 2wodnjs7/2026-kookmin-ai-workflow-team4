@@ -12,6 +12,33 @@
 - 스택: Next.js(풀스택 TypeScript) + SQLite(Prisma) + LLM 1개.
 - LLM은 `llm.ts` 어댑터 뒤로 격리. 키 없으면 mock 모드로 동작.
 
+## 프로젝트 구조 (단일 모노 앱 — 팀 합의)
+
+루트에 **Next.js 풀스택 앱 하나**를 둔다. API(`app/api/*`)와 화면(`app/(ui)/*`)이
+같은 앱에서 동작하며 `npm run dev` 하나로 띄운다. (별도 `backend/`·`frontend/` 분리 없음)
+
+```
+/
+├── prisma/schema.prisma     # 데이터 계약 (단일 소스)
+├── app/
+│   ├── api/                 # 라우트 핸들러 (서버 API)
+│   │   ├── meetings/        # BE-1
+│   │   ├── actions/         # BE-2
+│   │   └── search/          # BE-2
+│   └── (ui)/                # 화면 3페이지 — FE
+├── src/
+│   ├── server/              # 서버 로직 (DB·LLM 접근)
+│   │   ├── ai/              # llm.ts 어댑터·프롬프트 — BE-1
+│   │   ├── meetings/        # BE-1
+│   │   ├── actions/         # BE-2
+│   │   └── search/          # BE-2
+│   ├── components/          # FE 공통 컴포넌트
+│   └── lib/apiClient.ts     # FE → API 호출 클라이언트
+└── docs/                    # 팀 문서 (api-contract.md 등)
+```
+
+> 아래 "분담"의 소유 경로는 모두 이 루트 기준이다.
+
 ## 데이터 계약 (팀이 합의한 단일 공유 스키마)
 
 `prisma/schema.prisma`가 유일한 공유 합의 파일이다. 이 모양을 임의로 바꾸지 말 것(변경은 PR로 합의).
@@ -51,4 +78,4 @@ API 응답은 위 스키마와 정확히 일치해야 한다. mock 응답과 실
 
 1. [README.md](README.md) — 제품 개요·실행법
 2. [docs/team-workflow.md](docs/team-workflow.md) — git 협업 규칙
-3. `prisma/schema.prisma` — 데이터 계약 (생성되면)
+3. `prisma/schema.prisma` — 데이터 계약 (단일 공유 스키마)
