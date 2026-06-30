@@ -4,7 +4,10 @@ const prisma = new PrismaClient();
 
 /**
  * 시연용 시드 데이터 — 검색·트래커 데모를 위한 회의 3건 + 액션아이템.
- * 멱등성을 위해 기존 데이터를 모두 비우고 다시 채운다(ActionItem은 Cascade로 함께 삭제).
+ *
+ * ⚠️ 파괴적(reset) 스크립트입니다: 멱등성을 위해 실행 시 기존 Meeting·ActionItem을
+ *    모두 삭제한 뒤 시연 데이터로 다시 채웁니다(ActionItem은 Cascade로 함께 삭제).
+ *    로컬에서 직접 만든 회의·액션 데이터가 있으면 함께 사라지므로 시연 환경에서만 쓰세요.
  * 등장 이름은 계약 예시와 동일한 가상 인물(실명 아님).
  *
  * 실행: npm run db:seed   (사전: npm run db:generate && npm run db:push)
@@ -100,7 +103,14 @@ const meetings = [
 ];
 
 async function main() {
-  console.log("[seed] 기존 데이터 삭제 중...");
+  console.log(
+    "⚠️  [seed] 시연용 reset — 기존 Meeting·ActionItem을 모두 삭제하고 시연 데이터로 다시 채웁니다.",
+  );
+  const [prevMeetings, prevActions] = await Promise.all([
+    prisma.meeting.count(),
+    prisma.actionItem.count(),
+  ]);
+  console.log(`[seed] 삭제 대상: 회의 ${prevMeetings}건, 액션아이템 ${prevActions}건`);
   await prisma.actionItem.deleteMany();
   await prisma.meeting.deleteMany();
 
