@@ -1,24 +1,43 @@
+import { generateGemini, readGeminiConfig } from "./gemini.js";
 import { generateLive, readLiveConfig } from "./live.js";
 import { generateMock } from "./mock.js";
 import type { GenerateInput, GeneratedArtifacts, LlmMode } from "./types.js";
 
+type Provider = "gemini" | "openai" | "mock";
+
 /**
- * LLM 어댑터의 단일 진입점.
- * - LLM_API_KEY가 있으면 live 모드, 없으면 mock 모드.
- * - 두 모드의 출력 스키마는 동일하다(GeneratedArtifacts).
+ * 사용할 provider 결정.
+ * 우선순위: GEMINI_API_KEY(Gemini) → LLM_API_KEY(OpenAI 호환) → mock.
+ */
+function resolveProvider(): Provider {
+  if (readGeminiConfig()) return "gemini";
+  if (readLiveConfig()) return "openai";
+  return "mock";
+}
+
+/**
+ * LLM 어댑터 진입점.
+ * - 키가 하나라도 있으면 live, 없으면 mock.
+ * - 모든 provider의 출력 스키마는 동일하다(GeneratedArtifacts).
  */
 export function getLlmMode(): LlmMode {
-  return readLiveConfig() ? "live" : "mock";
+  return resolveProvider() === "mock" ? "mock" : "live";
 }
 
 export async function generateMeetingArtifacts(
   input: GenerateInput,
 ): Promise<GeneratedArtifacts> {
-  const config = readLiveConfig();
-  if (config) {
-    return generateLive(input, config);
+  switch (resolveProvider()) {
+    case "gemini": {
+      return generateGemini(input, readGeminiConfig()!);
+    }
+    case "openai": {
+      return generateLive(input, readLiveConfig()!);
+    }
+    default: {
+      return generateMock(input);
+    }
   }
-  return generateMock(input);
 }
 
 export type { GenerateInput, GeneratedArtifacts, LlmMode } from "./types.js";

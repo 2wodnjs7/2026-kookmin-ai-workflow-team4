@@ -16,6 +16,7 @@
     "smoke": "tsx scripts/smoke.ts"
   },
   "dependencies": {
+    "@google/genai": "^2.10.0",
     "@prisma/client": "^6.19.3",
     "cors": "^2.8.5",
     "express": "^4.21.2",
