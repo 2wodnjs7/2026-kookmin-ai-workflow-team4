@@ -1,6 +1,8 @@
 import api from '@/api/axios';
 import type {
   CreateMeetingRequest,
+  GenerateActionsRequest,
+  GenerateActionsResponse,
   Meeting,
   PaginatedActionsResponse,
   PaginatedMeetingsResponse,
@@ -40,6 +42,16 @@ export async function updateActionItem(
   body: UpdateActionItemRequest,
 ): Promise<ActionItem> {
   const { data } = await api.patch<ActionItem>(`/api/actions/${id}`, body);
+  return data;
+}
+
+export async function generateActions(
+  body: GenerateActionsRequest,
+): Promise<GenerateActionsResponse> {
+  const { data } = await api.post<GenerateActionsResponse>('/api/actions/generate', {
+    meetingId: body.meetingId,
+    mode: body.mode ?? 'all',
+  });
   return data;
 }
 

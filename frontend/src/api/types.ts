@@ -71,6 +71,16 @@ export interface UpdateActionItemRequest {
   dueDate?: string | null;
 }
 
+export interface GenerateActionsRequest {
+  meetingId: string;
+  mode?: 'one' | 'all';
+}
+
+export interface GenerateActionsResponse {
+  actions: ActionItem[];
+  generated: number;
+}
+
 export interface ApiErrorBody {
   error: {
     code: string;
