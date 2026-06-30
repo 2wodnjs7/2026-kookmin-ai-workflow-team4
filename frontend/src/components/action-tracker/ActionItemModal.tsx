@@ -11,7 +11,7 @@ interface ActionItemModalProps {
   mode: 'add' | 'edit';
   item?: ActionBoardItem;
   onClose: () => void;
-  onSave: (draft: ActionItemDraft) => void;
+  onSave: (draft: ActionItemDraft) => void | Promise<void>;
   onDelete?: (id: string) => void;
 }
 
@@ -72,19 +72,18 @@ export default function ActionItemModal({
 
   if (!open) return null;
 
-  const handleSubmit = (event: FormEvent) => {
+  const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     const content = draft.content.trim();
     if (!content) return;
 
-    onSave({
+    await onSave({
       ...draft,
       content,
       assignee: draft.assignee?.trim() || null,
       meeting: draft.meeting.trim() || '수동 추가',
       memo: draft.memo.trim(),
     });
-    onClose();
   };
 
   return (
