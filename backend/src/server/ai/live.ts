@@ -1,6 +1,16 @@
 import { ApiError } from "../http/errors.js";
-import { buildUserPrompt, SYSTEM_PROMPT } from "./prompts.js";
-import { GeneratedArtifactsSchema, type GenerateInput, type GeneratedArtifacts } from "./types.js";
+import {
+  ACTIONS_SYSTEM_PROMPT,
+  buildUserPrompt,
+  MINUTES_SYSTEM_PROMPT,
+} from "./prompts.js";
+import {
+  GeneratedActionsResultSchema,
+  MeetingMinutesResultSchema,
+  type GenerateInput,
+  type GeneratedActionItem,
+  type MeetingMinutesResult,
+} from "./types.js";
 
 interface LiveConfig {
   apiKey: string;
@@ -19,13 +29,44 @@ export function readLiveConfig(): LiveConfig | null {
 }
 
 /**
- * OpenAI 호환 Chat Completions로 회의록을 생성한다.
+ * OpenAI 호환 Chat Completions로 회의록(minutes)을 생성한다(액션아이템 제외, #28).
  * JSON 모드를 사용하고, 응답을 계약 스키마로 검증한다.
  */
-export async function generateLive(
+export async function generateLiveMinutes(
   input: GenerateInput,
   config: LiveConfig,
-): Promise<GeneratedArtifacts> {
+): Promise<MeetingMinutesResult> {
+  const parsed = await callLive(input, config, MINUTES_SYSTEM_PROMPT);
+
+  const result = MeetingMinutesResultSchema.safeParse(parsed);
+  if (!result.success) {
+    throw new ApiError("LLM_ERROR", "LLM 응답이 회의록 스키마와 일치하지 않습니다.");
+  }
+  return result.data;
+}
+
+/**
+ * OpenAI 호환 Chat Completions로 액션아이템을 추출한다(회의록 본문 제외, #28).
+ */
+export async function generateLiveActions(
+  input: GenerateInput,
+  config: LiveConfig,
+): Promise<GeneratedActionItem[]> {
+  const parsed = await callLive(input, config, ACTIONS_SYSTEM_PROMPT);
+
+  const result = GeneratedActionsResultSchema.safeParse(parsed);
+  if (!result.success) {
+    throw new ApiError("LLM_ERROR", "LLM 응답이 액션아이템 스키마와 일치하지 않습니다.");
+  }
+  return result.data.actionItems;
+}
+
+/** OpenAI 호환 chat/completions 호출 + JSON 파싱 공통 처리. */
+async function callLive(
+  input: GenerateInput,
+  config: LiveConfig,
+  systemPrompt: string,
+): Promise<unknown> {
   let res: Response;
   try {
     res = await fetch(`${config.baseUrl}/chat/completions`, {
@@ -39,7 +80,7 @@ export async function generateLive(
         temperature: 0.2,
         response_format: { type: "json_object" },
         messages: [
-          { role: "system", content: SYSTEM_PROMPT },
+          { role: "system", content: systemPrompt },
           { role: "user", content: buildUserPrompt(input) },
         ],
       }),
@@ -60,16 +101,9 @@ export async function generateLive(
     throw new ApiError("LLM_ERROR", "LLM 응답이 비어 있습니다.");
   }
 
-  let parsed: unknown;
   try {
-    parsed = JSON.parse(content);
+    return JSON.parse(content);
   } catch {
     throw new ApiError("LLM_ERROR", "LLM 응답을 JSON으로 파싱할 수 없습니다.");
   }
-
-  const result = GeneratedArtifactsSchema.safeParse(parsed);
-  if (!result.success) {
-    throw new ApiError("LLM_ERROR", "LLM 응답이 회의록 스키마와 일치하지 않습니다.");
-  }
-  return result.data;
 }
