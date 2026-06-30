@@ -65,7 +65,7 @@ git switch -c 2026-06-ai-workflow/{id}/{agent}/{task} upstream/main
     docs: 팀 워크플로우 문서 추가
 ```
 
-허용 타입: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
+허용 타입: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `ci`
 
 > AI가 만든 변경도 사람이 `git diff`로 확인하고 커밋합니다.
 
@@ -76,10 +76,20 @@ git push -u origin {브랜치명}
 gh pr create --repo nxtcloud-edu/2026-kookmin-ai-workflow-team4 --base main --fill \
   --assignee @me \
   --reviewer {소유영역 담당자}
+# 예: 백엔드 meetings·계약 변경 → BE-2 리뷰
+#   --reviewer Chyopriushy
+# 계약·FE까지 닿으면 콤마로 여러 명
+#   --reviewer Chyopriushy,xxrthscrclz
 ```
 
 - **assignee는 항상 작성자 본인(`@me`)** — PR 책임자를 명확히 해 추적·필터를 쉽게 한다.
-- **reviewer는 변경이 닿는 소유 영역의 담당자**를 지정한다. (예: 백엔드 공통·계약 변경 → BE-2, 계약·FE 영향 → FE. 둘 다 닿으면 둘 다.)
+  (assignee는 "책임자"일 뿐 리뷰어가 아니다. reviewer는 아래처럼 따로 지정한다.)
+- **reviewer는 변경이 닿는 소유 영역의 담당자**를 지정한다(§6 테이블의 github-id 사용):
+  - 백엔드 공통·계약 변경 → BE-2
+  - 계약·FE 영향 → FE
+  - **`schema.prisma`·마이그레이션·시드(`backend/prisma/*`) 변경 → BE-2 필수**(공통 셋업 소유).
+  - 단, **스키마 변경은 BE-1·FE도 소비**하므로 이 경우 reviewer에 BE-1·FE도 함께 넣는다(전원 합의).
+  - 둘 이상 영역에 닿으면 해당 담당자를 모두 넣는다.
 - reviewer는 upstream(`nxtcloud-edu`) 협업자여야 지정된다.
 
 ### 최신화 (fetch)
@@ -136,5 +146,7 @@ git merge upstream/main   # 또는 rebase
 | github-id | 역할 | 주 사용 에이전트 | 개인 LLM-Wiki 운영 방식 |
 |---|---|---|---|
 | 2wodnjs7 | BE-1 (회의록 생성 엔진 / LLM·AWS) | Kiro | 10-projects에 프로젝트별 폴더, 작업마다 progress/decision/knowledge 갱신 |
-| _(팀원)_ | BE-2 (트래커·검색 / 공통 셋업) | | |
-| _(팀원)_ | FE (화면 3페이지) | | |
+| Chyopriushy | BE-2 (트래커·검색 / 공통 셋업) | | |
+| xxrthscrclz | FE (화면 3페이지) | Cursor | |
+
+> github-id는 PR #6/리뷰에서 본인들이 밝힌 역할 기준으로 채웠습니다. 틀리면 본인이 PR로 수정하세요.
