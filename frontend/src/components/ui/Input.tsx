@@ -16,7 +16,7 @@ export default function Input({ label, className = '', id, ...props }: InputProp
       )}
       <input
         id={inputId}
-        className={`w-full rounded-lg border border-glass-border bg-glass-bg px-3 py-2 text-sm text-text-primary backdrop-blur-sm placeholder:text-text-muted outline-none transition-colors focus:border-border-focus focus:ring-2 focus:ring-primary/20 ${className}`}
+        className={`field-control ${className}`}
         {...props}
       />
     </div>

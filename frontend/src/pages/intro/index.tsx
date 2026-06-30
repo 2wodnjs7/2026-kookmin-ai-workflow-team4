@@ -1,6 +1,8 @@
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import DamrokMark from '@/components/brand/DamrokMark';
 import Button from '@/components/ui/Button';
+import { scrollToElementId, scrollToHash } from '@/utils/smoothScroll';
 
 const coreFeatures = [
   {
@@ -81,6 +83,20 @@ const meaningCards = [
 ];
 
 export default function IntroPage() {
+  useEffect(() => {
+    const { hash } = window.location;
+    if (!hash) return;
+
+    const id = hash.replace(/^#/, '');
+    requestAnimationFrame(() => scrollToElementId(id));
+  }, []);
+
+  const handleFeaturesClick = (event: { preventDefault: () => void }) => {
+    event.preventDefault();
+    scrollToHash('#features');
+    window.history.replaceState(null, '', '#features');
+  };
+
   return (
     <div className="flex flex-col gap-16 pb-8">
       {/* Hero */}
@@ -106,7 +122,7 @@ export default function IntroPage() {
           <Link to="/meetings/create">
             <Button size="lg">지금 시작하기</Button>
           </Link>
-          <a href="#features">
+          <a href="#features" onClick={handleFeaturesClick}>
             <Button variant="secondary" size="lg">
               기능 살펴보기
             </Button>
@@ -132,7 +148,7 @@ export default function IntroPage() {
       </section>
 
       {/* Core Features */}
-      <section id="features" className="flex flex-col gap-6">
+      <section id="features" className="scroll-mt-24 flex flex-col gap-6">
         <div className="flex flex-col gap-2 text-center">
           <div className="text-2xl font-bold text-text-primary">핵심 기능</div>
           <div className="text-sm text-text-secondary">

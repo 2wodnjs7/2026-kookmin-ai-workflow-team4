@@ -4,6 +4,7 @@ import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import Alert from '@/components/ui/Alert';
 import FileDropZone from '@/components/ui/FileDropZone';
+import DatePicker from '@/components/ui/DatePicker';
 
 export default function MeetingCreatePage() {
   const [title, setTitle] = useState('');
@@ -50,12 +51,13 @@ export default function MeetingCreatePage() {
             onChange={(e) => setTitle(e.target.value)}
             required
           />
-          <Input
+          <DatePicker
             label="회의 날짜"
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
+            id="meeting-date"
+            value={date || null}
+            onChange={(next) => setDate(next ?? '')}
             required
+            clearable={false}
           />
           <Input
             label="참석자 (쉼표로 구분)"
