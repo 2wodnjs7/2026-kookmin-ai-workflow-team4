@@ -16,7 +16,9 @@ export default function Header() {
     <header className="glass sticky top-0 z-50 border-b border-glass-border">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-6 px-4">
         <NavLink to="/" className="flex items-center gap-2 no-underline">
-          <img src="/damrok-icon.png" alt="담록 아이콘" className="h-8 w-8 object-contain" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/90 shadow-md">
+            <img src="/damrok-mark.svg" alt="담록 아이콘" className="h-7 w-7 object-contain" />
+          </div>
           <div className="text-base font-semibold text-nav-text">담록</div>
         </NavLink>
 

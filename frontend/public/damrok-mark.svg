@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none">
+  <g transform="translate(0 5)">
+    <path
+      d="M34 32C34 24.268 40.268 18 48 18H80C87.732 18 94 24.268 94 32V72C94 79.732 87.732 86 80 86H63L44 104V86H48C40.268 86 34 79.732 34 72V32Z"
+      fill="white"
+      fill-opacity="0.96"
+    />
+    <path d="M78 18V34C78 39.523 82.477 44 88 44H94" stroke="#BFDBFE" stroke-width="7" stroke-linecap="round" />
+    <path d="M50 42H76" stroke="#3B82F6" stroke-width="7" stroke-linecap="round" />
+    <path d="M50 58H78" stroke="#60A5FA" stroke-width="7" stroke-linecap="round" />
+    <path d="M50 74H64" stroke="#93C5FD" stroke-width="7" stroke-linecap="round" />
+    <circle cx="86" cy="74" r="16" fill="#22D3EE" />
+    <path d="M78 74.5L83.5 80L94 68" stroke="white" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M23 52C27 35 39 23 56 18" stroke="#BAE6FD" stroke-width="5" stroke-linecap="round" />
+    <path d="M105 56C109 74 101 92 84 102" stroke="#BAE6FD" stroke-width="5" stroke-linecap="round" />
+    <circle cx="21" cy="62" r="7" fill="#E0F2FE" />
+    <circle cx="61" cy="16" r="7" fill="#E0F2FE" />
+    <circle cx="88" cy="100" r="7" fill="#E0F2FE" />
+  </g>
+</svg>

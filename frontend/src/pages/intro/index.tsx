@@ -83,7 +83,9 @@ export default function IntroPage() {
     <div className="flex flex-col gap-16 pb-8">
       {/* Hero */}
       <section className="glass-strong flex flex-col items-center gap-6 rounded-3xl px-6 py-16 text-center md:px-12">
-        <img src="/damrok-icon.png" alt="담록 아이콘" className="h-20 w-20 object-contain" />
+        <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-primary/90 shadow-lg">
+          <img src="/damrok-mark.svg" alt="담록 아이콘" className="h-16 w-16 object-contain" />
+        </div>
         <div className="flex flex-col gap-2">
           <div className="text-4xl font-bold tracking-tight text-text-primary md:text-5xl">
             담록
