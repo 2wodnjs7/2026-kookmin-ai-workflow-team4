@@ -69,7 +69,8 @@ export async function generateGemini(
     });
     text = response.text;
   } catch (cause) {
-    throw new ApiError("LLM_ERROR", `Gemini 호출에 실패했습니다: ${(cause as Error).message}`);
+    const reason = cause instanceof Error ? cause.message : String(cause);
+    throw new ApiError("LLM_ERROR", `Gemini 호출에 실패했습니다: ${reason}`);
   }
 
   if (!text) {
@@ -78,7 +79,7 @@ export async function generateGemini(
 
   let parsed: unknown;
   try {
-    parsed = JSON.parse(text);
+    parsed = JSON.parse(stripCodeFence(text));
   } catch {
     throw new ApiError("LLM_ERROR", "Gemini 응답을 JSON으로 파싱할 수 없습니다.");
   }
@@ -115,4 +116,17 @@ function normalizeDue(due: string | null | undefined): string | null {
   if (!due) return null;
   const d = new Date(due);
   return Number.isNaN(d.getTime()) ? null : due;
+}
+
+/**
+ * Gemini가 responseMimeType 설정에도 가끔 ```json ... ``` 코드펜스로 감싸는 경우가 있어,
+ * JSON.parse 전에 펜스를 제거한다.
+ */
+function stripCodeFence(text: string): string {
+  const trimmed = text.trim();
+  if (!trimmed.startsWith("```")) return trimmed;
+  return trimmed
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/, "")
+    .trim();
 }

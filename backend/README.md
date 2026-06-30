@@ -9,8 +9,10 @@
 
 ## 실행
 
+> 요구사항: **Node.js 20 이상**(권장 22). LLM provider SDK(`@google/genai`)가 Node 20+를 요구한다.
+
 ```bash
-cp .env.example .env        # 필요시 값 수정 (LLM_API_KEY 없으면 mock 모드)
+cp .env.example .env        # 필요시 값 수정 (GEMINI_API_KEY 없으면 mock 모드)
 npm install
 npm run db:generate         # prisma generate
 npm run db:push             # SQLite 스키마 동기화 (dev.db 생성)
