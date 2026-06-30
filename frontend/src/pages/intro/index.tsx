@@ -7,7 +7,7 @@ const coreFeatures = [
     icon: "📝",
     title: "AI 회의록 생성",
     description:
-      "전사본을 붙여넣으면 AI가 안건·논의 요약·결정사항으로 구조화된 회의록을 만들어 드립니다.",
+      "회의 내용을 입력하면 AI가 안건·논의 요약·결정사항으로 구조화된 회의록을 만들어 드립니다.",
     tag: "핵심",
   },
   {
@@ -29,8 +29,8 @@ const coreFeatures = [
 const usageSteps = [
   {
     step: "01",
-    title: "전사본 입력",
-    description: "회의록 생성 페이지에 회의 전사본·제목·참석자를 입력합니다.",
+    title: "회의 내용 입력",
+    description: "회의록 생성 페이지에 텍스트·제목·참석자를 입력하거나 파일을 업로드합니다.",
   },
   {
     step: "02",
