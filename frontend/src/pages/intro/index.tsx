@@ -1,6 +1,6 @@
-import {Link} from "react-router-dom";
-import DamrokMark from "@/components/brand/DamrokMark";
-import Button from "@/components/ui/Button";
+import { Link } from 'react-router-dom';
+import DamrokMark from '@/components/brand/DamrokMark';
+import Button from '@/components/ui/Button';
 
 const coreFeatures = [
   {
@@ -95,8 +95,8 @@ export default function IntroPage() {
           <div className="text-lg text-text-secondary">Damrok · 談錄</div>
         </div>
         <div className="max-w-2xl text-base leading-relaxed text-text-secondary">
-          <strong className="text-text-primary">談(이야기할 담)</strong>과{" "}
-          <strong className="text-text-primary">錄(기록할 록)</strong>의 합 —
+          <div className="inline font-semibold text-text-primary">談(이야기할 담)</div>과{' '}
+          <div className="inline font-semibold text-text-primary">錄(기록할 록)</div>의 합 —
           팀의 대화를 기록하고, 다시 꺼내 쓸 수 있는 지식으로 남깁니다.
         </div>
         <div className="rounded-full border border-glass-border bg-glass-bg px-5 py-2 text-sm font-medium text-primary">

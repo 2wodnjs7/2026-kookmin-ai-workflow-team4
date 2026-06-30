@@ -38,17 +38,15 @@ export default function ThemeToggle() {
       onClick={toggleTheme}
       className="theme-switch"
     >
-      <span className={`theme-switch-track ${isDark ? 'theme-switch-track-dark' : ''}`}>
-        <span className="theme-switch-icon theme-switch-icon-light">
+      <div className={`theme-switch-track ${isDark ? 'theme-switch-track-dark' : ''}`}>
+        <div className="theme-switch-icon theme-switch-icon-light">
           <SunIcon />
-        </span>
-        <span className="theme-switch-icon theme-switch-icon-dark">
+        </div>
+        <div className="theme-switch-icon theme-switch-icon-dark">
           <MoonIcon />
-        </span>
-        <span
-          className={`theme-switch-thumb ${isDark ? 'theme-switch-thumb-dark' : ''}`}
-        />
-      </span>
+        </div>
+        <div className={`theme-switch-thumb ${isDark ? 'theme-switch-thumb-dark' : ''}`} />
+      </div>
     </button>
   );
 }

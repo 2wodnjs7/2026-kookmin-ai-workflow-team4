@@ -252,18 +252,18 @@
     box-shadow: 0 3px 12px rgba(0, 0, 0, 0.35);
   }
 
-  .theme-switch-track:has(.theme-switch-thumb-dark) .theme-switch-icon-light {
+  .theme-switch-track-dark .theme-switch-icon-light {
     opacity: 0.45;
     transform: scale(0.9);
   }
 
-  .theme-switch-track:has(.theme-switch-thumb-dark) .theme-switch-icon-dark {
+  .theme-switch-track-dark .theme-switch-icon-dark {
     color: var(--color-switch-icon-dark);
     opacity: 1;
     transform: scale(1.05);
   }
 
-  .theme-switch-track:not(:has(.theme-switch-thumb-dark)) .theme-switch-icon-light {
+  .theme-switch-track:not(.theme-switch-track-dark) .theme-switch-icon-light {
     color: var(--color-switch-icon-light);
   }
 
