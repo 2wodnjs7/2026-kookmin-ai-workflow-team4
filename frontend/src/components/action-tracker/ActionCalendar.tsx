@@ -4,19 +4,18 @@ import type { ActionBoardItem } from '@/constants/actionTracker';
 import {
   formatDateRange,
   getItemDateRange,
-  isDateInRange,
-  parseDateKey,
   rangeOverlapsMonth,
   toDateKey,
-  toDateKeyFromParts,
 } from '@/utils/actionDateRange';
 import { getAssigneeColor, getUniqueAssignees } from '@/utils/assigneeColor';
+import { buildMonthWeeks, buildWeekBarSegments } from '@/utils/calendarWeekBars';
 
 interface ActionCalendarProps {
   items: ActionBoardItem[];
 }
 
 const WEEKDAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'];
+const BAR_ROW_HEIGHT = 22;
 
 export default function ActionCalendar({ items }: ActionCalendarProps) {
   const today = new Date();
@@ -33,39 +32,20 @@ export default function ActionCalendar({ items }: ActionCalendarProps) {
     [items],
   );
 
-  const itemsByDate = useMemo(() => {
-    const map = new Map<string, ActionBoardItem[]>();
+  const monthWeeks = useMemo(
+    () => buildMonthWeeks(viewYear, viewMonth),
+    [viewYear, viewMonth],
+  );
 
-    for (let day = 1; day <= new Date(viewYear, viewMonth + 1, 0).getDate(); day += 1) {
-      const dateKey = toDateKeyFromParts(viewYear, viewMonth, day);
-      const date = parseDateKey(dateKey);
-      const active = itemsWithRange
-        .filter(({ range }) => isDateInRange(date, range))
-        .map(({ item }) => item);
-
-      if (active.length > 0) {
-        map.set(dateKey, active);
-      }
-    }
-
-    return map;
-  }, [itemsWithRange, viewYear, viewMonth]);
-
-  const calendarDays = useMemo(() => {
-    const firstDay = new Date(viewYear, viewMonth, 1);
-    const startOffset = firstDay.getDay();
-    const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
-    const cells: (number | null)[] = [];
-
-    for (let i = 0; i < startOffset; i += 1) {
-      cells.push(null);
-    }
-    for (let day = 1; day <= daysInMonth; day += 1) {
-      cells.push(day);
-    }
-
-    return cells;
-  }, [viewYear, viewMonth]);
+  const weeksWithBars = useMemo(
+    () =>
+      monthWeeks.map((week) => {
+        const segments = buildWeekBarSegments(week, itemsWithRange);
+        const maxLane = segments.reduce((max, seg) => Math.max(max, seg.lane), -1);
+        return { week, segments, barRows: maxLane + 1 };
+      }),
+    [monthWeeks, itemsWithRange],
+  );
 
   const monthLabel = `${viewYear}년 ${viewMonth + 1}월`;
   const todayKey = toDateKey(today);
@@ -106,7 +86,7 @@ export default function ActionCalendar({ items }: ActionCalendarProps) {
   return (
     <Card
       title="일정 캘린더"
-      description="액션 아이템의 시작일부터 마감일까지 기간을 표시합니다. 색상은 담당자별로 구분됩니다."
+      description="시작일부터 마감일까지 기간이 한 줄로 이어져 표시됩니다. 색상은 담당자별로 구분됩니다."
     >
       <div className="flex flex-col gap-6">
         {assigneeLegend.length > 0 && (
@@ -150,71 +130,75 @@ export default function ActionCalendar({ items }: ActionCalendarProps) {
           </button>
         </div>
 
-        <div className="grid grid-cols-7 gap-1">
-          {WEEKDAY_LABELS.map((label, index) => (
-            <div
-              key={label}
-              className={`py-2 text-center text-xs font-medium ${
-                index === 0 ? 'text-error' : index === 6 ? 'text-primary' : 'text-text-muted'
-              }`}
-            >
-              {label}
-            </div>
-          ))}
-
-          {calendarDays.map((day, index) => {
-            if (day === null) {
-              return <div key={`empty-${index}`} className="min-h-20" />;
-            }
-
-            const dateKey = toDateKeyFromParts(viewYear, viewMonth, day);
-            const dayItems = itemsByDate.get(dateKey) ?? [];
-            const isToday = dateKey === todayKey;
-
-            return (
+        <div className="flex flex-col gap-3">
+          <div className="grid grid-cols-7 gap-1">
+            {WEEKDAY_LABELS.map((label, index) => (
               <div
-                key={dateKey}
-                className={`min-h-20 rounded-lg border p-1.5 ${
-                  isToday
-                    ? 'border-primary bg-primary-subtle'
-                    : dayItems.length > 0
-                      ? 'border-border-default bg-bg-surface'
-                      : 'border-border-default bg-bg-surface'
+                key={label}
+                className={`py-1 text-center text-xs font-medium ${
+                  index === 0 ? 'text-error' : index === 6 ? 'text-primary' : 'text-text-muted'
                 }`}
               >
-                <div
-                  className={`text-xs font-medium ${
-                    isToday ? 'text-primary' : 'text-text-secondary'
-                  }`}
-                >
-                  {day}
-                </div>
-                {dayItems.length > 0 && (
-                  <div className="mt-1 flex flex-col gap-0.5">
-                    {dayItems.slice(0, 3).map((item) => {
-                      const color = getAssigneeColor(item.assignee);
-                      const range = getItemDateRange(item);
-                      const isStart = range && toDateKey(range.start) === dateKey;
-                      const isEnd = range && toDateKey(range.end) === dateKey;
-                      const rangeHint =
-                        isStart && isEnd ? '' : isStart ? ' (시작)' : isEnd ? ' (마감)' : '';
+                {label}
+              </div>
+            ))}
+          </div>
 
-                      return (
-                        <div
-                          key={item.id}
-                          className={`truncate rounded px-1 text-[10px] ${color.calendarBar} ${color.badgeText}`}
-                          title={`${item.content}${rangeHint}`}
-                        >
-                          {item.content}
-                          {rangeHint}
-                        </div>
-                      );
-                    })}
-                    {dayItems.length > 3 && (
-                      <div className="text-[10px] text-text-muted">+{dayItems.length - 3}</div>
-                    )}
-                  </div>
-                )}
+          {weeksWithBars.map(({ week, segments, barRows }, weekIndex) => {
+            return (
+              <div key={`week-${weekIndex}`} className="flex flex-col gap-1">
+                <div className="grid grid-cols-7 gap-1">
+                  {week.map((cell, colIndex) => {
+                    const isToday = cell.dateKey === todayKey;
+
+                    return (
+                      <div
+                        key={`day-${weekIndex}-${colIndex}`}
+                        className={`flex min-h-7 items-start justify-end rounded-md border p-1 ${
+                          isToday
+                            ? 'border-primary bg-primary-subtle'
+                            : 'border-transparent bg-transparent'
+                        }`}
+                      >
+                        {cell.day !== null && (
+                          <div
+                            className={`text-xs font-medium ${
+                              isToday ? 'text-primary' : 'text-text-secondary'
+                            }`}
+                          >
+                            {cell.day}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div
+                  className="grid grid-cols-7 gap-1"
+                  style={{ gridTemplateRows: `repeat(${Math.max(barRows, 1)}, ${BAR_ROW_HEIGHT}px)` }}
+                >
+                  {segments.map((segment) => {
+                    const color = getAssigneeColor(segment.item.assignee);
+                    const radius =
+                      `${segment.roundLeft ? 'rounded-l-md' : 'rounded-l-none'} ` +
+                      `${segment.roundRight ? 'rounded-r-md' : 'rounded-r-none'}`;
+
+                    return (
+                      <div
+                        key={`${segment.item.id}-${weekIndex}-${segment.startCol}-${segment.lane}`}
+                        className={`flex h-5 items-center truncate px-1.5 text-[10px] leading-none ${color.calendarBar} ${color.badgeText} ${radius}`}
+                        style={{
+                          gridColumn: `${segment.startCol + 1} / span ${segment.span}`,
+                          gridRow: segment.lane + 1,
+                        }}
+                        title={segment.item.content}
+                      >
+                        {segment.showLabel ? segment.item.content : ''}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             );
           })}
