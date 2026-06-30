@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import Card from '@/components/ui/Card';
 import Alert from '@/components/ui/Alert';
 import Button from '@/components/ui/Button';
@@ -15,6 +16,7 @@ type ModalState =
   | { open: true; mode: 'edit'; item: ActionBoardItem };
 
 export default function ActionTrackerPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const items = useActionTrackerStore((state) => state.items);
   const loading = useActionTrackerStore((state) => state.loading);
   const error = useActionTrackerStore((state) => state.error);
@@ -30,12 +32,29 @@ export default function ActionTrackerPage() {
     void fetchItems();
   }, [fetchItems]);
 
-  const itemsByStatus = ACTION_STATUS_COLUMNS.reduce(
-    (acc, column) => {
-      acc[column.id] = items.filter((item) => item.status === column.id);
-      return acc;
-    },
-    {} as Record<(typeof ACTION_STATUS_COLUMNS)[number]['id'], ActionBoardItem[]>,
+  useEffect(() => {
+    const actionId = searchParams.get('actionId');
+    if (!actionId || loading) return;
+
+    const item = items.find((entry) => entry.id === actionId);
+    if (!item) return;
+
+    setModal({ open: true, mode: 'edit', item });
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete('actionId');
+    setSearchParams(nextParams, { replace: true });
+  }, [items, loading, searchParams, setSearchParams]);
+
+  const itemsByStatus = useMemo(
+    () =>
+      ACTION_STATUS_COLUMNS.reduce(
+        (acc, column) => {
+          acc[column.id] = items.filter((item) => item.status === column.id);
+          return acc;
+        },
+        {} as Record<(typeof ACTION_STATUS_COLUMNS)[number]['id'], ActionBoardItem[]>,
+      ),
+    [items],
   );
 
   return (
@@ -59,8 +78,9 @@ export default function ActionTrackerPage() {
       ) : (
         <Alert variant="info">
           백엔드 API에서 액션을 불러옵니다. 상태·내용·담당자·마감일 변경은 PATCH로 저장됩니다.
-          시작일·메모는 FE 전용이며 API에 저장되지 않습니다. 수동 추가는 현재 세션에만 반영됩니다(API POST
-          미지원).
+          보드 상태는 API 기준 할 일(todo)·완료(done)만 영속되며, 진행 중·보류는 UI 전용입니다.
+          시작일·메모는 FE 전용이며 API에 저장되지 않습니다. 수동 추가·삭제는 현재 세션에만 반영됩니다(API POST/DELETE
+          미지원, #23).
         </Alert>
       )}
 

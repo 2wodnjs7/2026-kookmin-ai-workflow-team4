@@ -9,7 +9,7 @@ import { createMeeting } from '@/api/command';
 import { USE_MOCK } from '@/api/config';
 import { ApiRequestError } from '@/api/errors';
 import type { Meeting } from '@/api/types';
-import { isoToDateKey } from '@/utils/actionApiMapper';
+import MeetingResultPanel from '@/components/meeting-create/MeetingResultPanel';
 
 export default function MeetingCreatePage() {
   const [title, setTitle] = useState('');
@@ -82,70 +82,7 @@ export default function MeetingCreatePage() {
         </Alert>
       )}
 
-      {result && (
-        <Card title="생성된 회의록">
-          <div className="flex flex-col gap-4">
-            <div>
-              <div className="text-lg font-semibold text-text-primary">{result.title}</div>
-              <div className="text-sm text-text-secondary">
-                {isoToDateKey(result.date)} · 참석자 {result.attendees.join(', ')}
-              </div>
-            </div>
-
-            {result.minutes && (
-              <div className="flex flex-col gap-3">
-                {result.minutes.agenda.length > 0 && (
-                  <div className="flex flex-col gap-1">
-                    <div className="text-sm font-medium text-text-primary">안건</div>
-                    <div className="flex flex-col gap-1 text-sm text-text-secondary">
-                      {result.minutes.agenda.map((item) => (
-                        <div key={item}>· {item}</div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {result.minutes.discussion && (
-                  <div className="flex flex-col gap-1">
-                    <div className="text-sm font-medium text-text-primary">논의 요약</div>
-                    <div className="text-sm text-text-secondary">{result.minutes.discussion}</div>
-                  </div>
-                )}
-                {result.minutes.decisions.length > 0 && (
-                  <div className="flex flex-col gap-1">
-                    <div className="text-sm font-medium text-text-primary">결정 사항</div>
-                    <div className="flex flex-col gap-1 text-sm text-text-secondary">
-                      {result.minutes.decisions.map((item) => (
-                        <div key={item}>· {item}</div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {result.actionItems.length > 0 && (
-              <div className="flex flex-col gap-2">
-                <div className="text-sm font-medium text-text-primary">
-                  액션 아이템 ({result.actionItems.length})
-                </div>
-                <div className="flex flex-col gap-2">
-                  {result.actionItems.map((action) => (
-                    <div
-                      key={action.id}
-                      className="rounded-lg border border-glass-border bg-bg-surface px-3 py-2 text-sm"
-                    >
-                      <div className="font-medium text-text-primary">{action.content}</div>
-                      <div className="text-xs text-text-secondary">
-                        {action.assignee ?? '담당자 미정'} · {action.status}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </Card>
-      )}
+      {result && <MeetingResultPanel meeting={result} />}
 
       {uploadError && (
         <Alert variant="error" title="파일 업로드 오류">
