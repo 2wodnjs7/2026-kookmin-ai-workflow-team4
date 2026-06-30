@@ -53,11 +53,11 @@ API 응답은 위 스키마와 정확히 일치해야 한다. mock 응답과 실
 
 ## 분담 (소유 경계 — 남의 폴더를 임의 수정하지 말 것)
 
-| 역할 | 담당                                              | 소유                                                                                                      |
-| ---- | ------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| BE-1 | 회의록 생성 엔진 (LLM·AWS 격리)                   | `backend/src/server/ai/*`, `backend/src/server/meetings/*`, 백엔드 `/api/meetings` 라우트                 |
+| 역할 | 담당 | 소유 |
+|---|---|---|
+| BE-1 | 회의록 생성 엔진 (LLM·AWS 격리) | `backend/src/server/ai/*`, `backend/src/server/meetings/*`, 백엔드 `/api/meetings` 라우트 |
 | BE-2 | 트래커·검색 + 공통 셋업(스키마·마이그레이션·시드) | `backend/src/server/actions/*`, `backend/src/server/search/*`, 백엔드 `/api/actions`·`/api/search` 라우트 |
-| FE   | 화면 3페이지(생성/트래커/검색)                    | `frontend/src/pages/*`, `frontend/src/components/*`, `frontend/src/api/*`                                 |
+| FE | 화면 3페이지(생성/트래커/검색) | `frontend/src/pages/*`, `frontend/src/components/*`, `frontend/src/api/*` |
 
 ## 작업 규칙
 

@@ -24,7 +24,7 @@ export default function MeetingCreatePage() {
       <div className="flex flex-col gap-2">
         <div className="text-2xl font-bold text-text-primary">회의록 생성</div>
         <div className="text-sm text-text-secondary">
-          회의 내용을 직접 입력하거나 PDF·Word·Markdown 파일을 업로드하면 AI가 구조화된
+          회의 내용을 직접 입력하거나 PDF·Word(.docx)·Markdown 파일을 업로드하면 AI가 구조화된
           회의록을 생성합니다.
         </div>
       </div>

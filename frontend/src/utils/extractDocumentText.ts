@@ -1,20 +1,14 @@
-import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
-import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
-import mammoth from 'mammoth';
-
-GlobalWorkerOptions.workerSrc = pdfWorker;
-
 export const ACCEPTED_DOCUMENT_EXTENSIONS = [
   '.txt',
   '.md',
   '.markdown',
   '.pdf',
-  '.doc',
   '.docx',
 ] as const;
 
+/** mammoth는 OOXML(.docx)만 지원. 레거시 바이너리 .doc는 제외. */
 export const ACCEPTED_DOCUMENT_ACCEPT =
-  '.txt,.md,.markdown,.pdf,.doc,.docx,text/plain,text/markdown,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+  '.txt,.md,.markdown,.pdf,.docx,text/plain,text/markdown,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document';
 
 function getExtension(fileName: string) {
   const index = fileName.lastIndexOf('.');
@@ -22,6 +16,12 @@ function getExtension(fileName: string) {
 }
 
 async function extractPdfText(file: File): Promise<string> {
+  const [{ getDocument, GlobalWorkerOptions }, pdfWorkerModule] = await Promise.all([
+    import('pdfjs-dist'),
+    import('pdfjs-dist/build/pdf.worker.min.mjs?url'),
+  ]);
+  GlobalWorkerOptions.workerSrc = pdfWorkerModule.default;
+
   const buffer = await file.arrayBuffer();
   const pdf = await getDocument({ data: buffer }).promise;
   const pages: string[] = [];
@@ -47,6 +47,7 @@ async function extractPdfText(file: File): Promise<string> {
 }
 
 async function extractDocxText(file: File): Promise<string> {
+  const mammoth = await import('mammoth');
   const buffer = await file.arrayBuffer();
   const result = await mammoth.extractRawText({ arrayBuffer: buffer });
   const text = result.value.trim();
@@ -73,9 +74,15 @@ export async function extractTextFromDocument(file: File): Promise<string> {
     return extractPdfText(file);
   }
 
-  if (extension === '.doc' || extension === '.docx') {
+  if (extension === '.docx') {
     return extractDocxText(file);
   }
 
-  throw new Error('지원하지 않는 파일 형식입니다. (PDF, Word, Markdown, TXT)');
+  if (extension === '.doc') {
+    throw new Error(
+      '구형 Word(.doc) 형식은 지원하지 않습니다. .docx로 저장한 뒤 다시 업로드해 주세요.',
+    );
+  }
+
+  throw new Error('지원하지 않는 파일 형식입니다. (PDF, Word .docx, Markdown, TXT)');
 }

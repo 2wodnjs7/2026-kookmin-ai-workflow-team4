@@ -9,7 +9,11 @@ export default function ActionCard({ item }: ActionCardProps) {
     <div className="glass rounded-xl p-4">
       <div className="text-sm font-medium text-text-primary">{item.content}</div>
       <div className="mt-2 flex flex-wrap gap-2 text-xs text-text-secondary">
-        <div className="rounded-full bg-bg-accent px-2 py-0.5">{item.assignee}</div>
+        {item.assignee ? (
+          <div className="rounded-full bg-bg-accent px-2 py-0.5">{item.assignee}</div>
+        ) : (
+          <div className="rounded-full bg-warning-bg px-2 py-0.5 text-warning">담당자 미정</div>
+        )}
         {item.dueDate ? (
           <div className="rounded-full glass px-2 py-0.5">{item.dueDate}</div>
         ) : (

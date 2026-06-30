@@ -1,9 +1,17 @@
 export type ActionBoardStatus = 'todo' | 'in_progress' | 'done' | 'on_hold';
 
+/** API 계약 ActionItem.status는 'todo' | 'done'만 허용. 연동 시 매핑 의도(②): */
+export const BOARD_STATUS_TO_API: Record<ActionBoardStatus, 'todo' | 'done'> = {
+  todo: 'todo',
+  in_progress: 'todo',
+  done: 'done',
+  on_hold: 'todo',
+};
+
 export interface ActionBoardItem {
   id: string;
   content: string;
-  assignee: string;
+  assignee: string | null;
   dueDate: string | null;
   status: ActionBoardStatus;
   meeting: string;

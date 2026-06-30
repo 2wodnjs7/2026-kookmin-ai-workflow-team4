@@ -82,7 +82,7 @@ export default function FileDropZone({ onTextExtracted, onError }: FileDropZoneP
           {isLoading ? '파일에서 텍스트 추출 중...' : '파일을 끌어다 놓거나 클릭하여 선택'}
         </div>
         <div className="text-xs text-text-muted">
-          PDF · Word(.doc/.docx) · Markdown · TXT
+          PDF · Word(.docx) · Markdown · TXT
         </div>
         {lastFileName && !isLoading && (
           <div className="text-xs text-primary">마지막 업로드: {lastFileName}</div>
