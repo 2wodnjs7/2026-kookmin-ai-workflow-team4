@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { getActionItems, updateActionItem } from '@/api/command';
+import { deleteActionItem, getActionItems, updateActionItem } from '@/api/command';
 import { USE_MOCK } from '@/api/config';
 import { ApiRequestError } from '@/api/errors';
 import {
@@ -24,7 +24,7 @@ interface ActionTrackerState {
   fetchItems: () => Promise<void>;
   addItem: (draft: ActionItemDraft) => void;
   updateItem: (id: string, patch: Partial<ActionItemDraft>) => Promise<void>;
-  removeItem: (id: string) => void;
+  removeItem: (id: string) => Promise<void>;
 }
 
 function createId() {
@@ -115,11 +115,27 @@ export const useActionTrackerStore = create<ActionTrackerState>((set, get) => ({
     }
   },
 
-  removeItem: (id) => {
-    set((state) => ({
-      items: state.items.filter((item) => item.id !== id),
-      error: null,
-    }));
+  removeItem: async (id) => {
+    // mock 또는 세션 전용(서버에 없는) 항목은 로컬에서만 제거.
+    if (USE_MOCK || isSessionOnlyItem(id)) {
+      set((state) => ({
+        items: state.items.filter((item) => item.id !== id),
+        error: null,
+      }));
+      return;
+    }
+
+    // API 항목은 백엔드 DELETE 후 제거(새로고침 후 부활 방지).
+    set({ error: null });
+    try {
+      await deleteActionItem(id);
+      set((state) => ({ items: state.items.filter((item) => item.id !== id) }));
+    } catch (error) {
+      const message =
+        error instanceof ApiRequestError ? error.message : '액션 삭제에 실패했습니다.';
+      set({ error: message });
+      throw error;
+    }
   },
 }));
 

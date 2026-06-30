@@ -47,6 +47,10 @@ export async function updateActionItem(
   return data;
 }
 
+export async function deleteActionItem(id: string): Promise<void> {
+  await api.delete(`/api/actions/${id}`);
+}
+
 export async function createActionItem(body: CreateActionItemRequest): Promise<ActionItem> {
   const { data } = await api.post<ActionItemWithMeeting>('/api/actions', body);
   return data;
