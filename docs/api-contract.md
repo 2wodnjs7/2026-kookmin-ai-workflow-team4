@@ -69,8 +69,12 @@
 
 ## 1. POST /api/meetings
 
-전사본(rawText)을 받아 **회의록(minutes)·액션아이템(actionItems)을 AI로 생성**하고
+전사본(rawText)을 받아 **회의록(minutes)을 AI로 생성**하고
 DB에 저장한 뒤, 생성된 회의 1건을 반환한다.
+
+> **액션아이템 분리(#28):** 이 엔드포인트는 회의록(minutes)만 생성·저장하며, 액션아이템은 **자동 생성하지 않는다.**
+> 응답의 `actionItems`는 **항상 빈 배열 `[]`**이다(스키마 필드는 유지). 액션 생성은 클라이언트가 원할 때 별도로
+> `POST /api/actions/generate`(BE-2 소유)를 호출해 수행한다.
 
 ### 요청
 
@@ -94,7 +98,7 @@ DB에 저장한 뒤, 생성된 회의 1건을 반환한다.
 
 ### 응답 `201 Created`
 
-생성·저장된 Meeting 1건을 `actionItems` 관계까지 포함해 반환한다.
+생성·저장된 Meeting 1건을 반환한다. 액션아이템은 자동 생성하지 않으므로 `actionItems`는 **항상 빈 배열**이다(#28).
 
 ```json
 {
@@ -111,26 +115,7 @@ DB에 저장한 뒤, 생성된 회의 1건을 반환한다.
     "decisions": ["검색 기능 우선 개발", "배포 없이 로컬 데모"]
   },
   "createdAt": "2026-06-30T09:23:50.000Z",
-  "actionItems": [
-    {
-      "id": "clyyyyyyyyyyyyyy",
-      "meetingId": "clxxxxxxxxxxxxxx",
-      "content": "검색 기능 구현",
-      "assignee": "김하나",
-      "dueDate": null,
-      "status": "todo",
-      "createdAt": "2026-06-30T09:23:50.000Z"
-    },
-    {
-      "id": "clzzzzzzzzzzzzzz",
-      "meetingId": "clxxxxxxxxxxxxxx",
-      "content": "데모 환경 점검",
-      "assignee": "[담당자 확인 필요]",
-      "dueDate": "2026-07-07T00:00:00.000Z",
-      "status": "todo",
-      "createdAt": "2026-06-30T09:23:50.000Z"
-    }
-  ]
+  "actionItems": []
 }
 ```
 

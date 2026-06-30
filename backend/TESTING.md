@@ -40,7 +40,7 @@ npm start                   # 또는 npm run dev — http://localhost:8080
 | `GET /health` | `200` `{status:"ok", llmMode:"mock"\|"live"}` |
 | `GET /api/meetings` | `200` 봉투 `{meetings,total,limit,offset}`. 목록 항목엔 `rawText` 없음, `actionItemCount` 포함 |
 | `GET /api/meetings/X` | `200` 단건 full(`rawText` + `actionItems[]`) |
-| `POST /api/meetings {"rawText":"..."}` | `201`, `minutes{agenda,discussion,decisions}`, `actionItems[]`, 헤더 `X-LLM-Mode` |
+| `POST /api/meetings {"rawText":"..."}` | `201`, `minutes{summary,keyPoints,agenda,discussion,decisions}`, `actionItems: []`(자동 생성 안 함, #28), 헤더 `X-LLM-Mode` |
 | `GET /api/actions?status=todo&limit=50` | `200` 봉투 `{actions,total,...}`, 각 항목에 `meeting{id,title,date}` |
 | `PATCH /api/actions/X {"status":"done"}` | `200`, 상태 토글 |
 | `GET /api/search?q=검색` | `200` 봉투 `{query,meetings,total,...}` |

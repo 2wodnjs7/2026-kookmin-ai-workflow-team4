@@ -47,11 +47,8 @@ async function main() {
     assert.ok(Array.isArray(created.minutes.decisions), "minutes.decisions 배열");
     assert.ok(Array.isArray(created.actionItems), "actionItems 배열");
     assert.ok(created.minutes.decisions.length > 0, "결정사항 1개 이상 추출");
-    assert.ok(created.actionItems.length > 0, "액션아이템 1개 이상 추출");
-    for (const ai of created.actionItems) {
-      assert.equal(ai.status, "todo", "신규 액션아이템 status=todo");
-      assert.ok("assignee" in ai && "dueDate" in ai, "assignee/dueDate 키 존재");
-    }
+    // #28: POST /api/meetings는 회의록만 생성하고 액션아이템은 자동 저장하지 않는다.
+    assert.equal(created.actionItems.length, 0, "생성 직후 actionItems는 빈 배열");
 
     // 2) GET 목록 (봉투 형태)
     const listRes = await fetch(`${base}/api/meetings`);

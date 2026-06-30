@@ -27,7 +27,8 @@ async function main() {
   let meetingId: string | undefined;
 
   try {
-    // 준비: 회의 1건 생성(mock) → 액션아이템 확보
+    // 준비: 회의 1건 생성(mock). #28 이후 POST /api/meetings는 액션을 자동 생성하지 않으므로
+    // 트래커 테스트용 액션아이템은 prisma로 직접 시드한다(이 스모크를 self-contained로 유지).
     const postRes = await fetch(`${base}/api/meetings`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -36,8 +37,16 @@ async function main() {
     assert.equal(postRes.status, 201, "사전 회의 생성은 201");
     const meeting = (await postRes.json()) as Record<string, any>;
     meetingId = meeting.id;
-    assert.ok(Array.isArray(meeting.actionItems) && meeting.actionItems.length > 0, "액션아이템 1개 이상");
-    const action = meeting.actionItems[0];
+    assert.equal(meeting.actionItems.length, 0, "#28: 회의 생성 시 액션 자동생성 안 함");
+
+    const action = (await prisma.actionItem.create({
+      data: {
+        meetingId: meetingId!,
+        content: `${TOKEN} 검색 API 설계`,
+        assignee: "김하나",
+        status: "todo",
+      },
+    })) as Record<string, any>;
 
     // 1) GET /api/actions — 봉투 형태 + meeting 컨텍스트
     const listRes = await fetch(`${base}/api/actions`);

@@ -1,12 +1,21 @@
-import type { GenerateInput, GeneratedActionItem, GeneratedArtifacts } from "./types.js";
+import type {
+  GenerateInput,
+  GeneratedActionItem,
+  MeetingMinutesResult,
+} from "./types.js";
 
 /**
- * 키가 없을 때 쓰는 mock 생성기.
- * 전사본에서 휴리스틱으로 구조를 뽑아내며, 출력 스키마는 live 모드와 동일하다.
+ * 전사본을 정제·분석한 중간 결과(회의록·액션 추출 공용).
  * (전사본에 없는 사실을 지어내지 않도록, 본문에서 추출한 내용만 사용한다.)
  */
-export function generateMock(input: GenerateInput): GeneratedArtifacts {
-  const rawLines = input.rawText
+interface Analysis {
+  rawLines: string[];
+  sentences: string[];
+  cleanedText: string;
+}
+
+function analyze(rawText: string): Analysis {
+  const rawLines = rawText
     .split(/\r?\n/)
     .map((l) => l.trim())
     .filter((l) => l.length > 0);
@@ -22,6 +31,16 @@ export function generateMock(input: GenerateInput): GeneratedArtifacts {
     .split(/(?<=[.!?。…])\s+/)
     .map((s) => s.trim())
     .filter((s) => s.length > 0);
+
+  return { rawLines, sentences, cleanedText };
+}
+
+/**
+ * 키가 없을 때 쓰는 mock 회의록(minutes) 생성기. 액션아이템은 생성하지 않는다(#28).
+ * 출력 스키마는 live 모드와 동일하다.
+ */
+export function generateMockMinutes(input: GenerateInput): MeetingMinutesResult {
+  const { rawLines, sentences, cleanedText } = analyze(input.rawText);
 
   const title = input.title?.trim() || "회의록 (제목 미정)";
 
@@ -46,8 +65,22 @@ export function generateMock(input: GenerateInput): GeneratedArtifacts {
   const keyPoints = (decisions.length > 0 ? decisions : sentences.slice(0, 3)).slice(0, 5);
   const discussion = sentences.slice(0, 4).join(" ").slice(0, 600) || cleanedText.slice(0, 400);
 
+  return {
+    title,
+    attendees,
+    minutes: { summary, keyPoints, agenda, discussion, decisions },
+  };
+}
+
+/**
+ * 키가 없을 때 쓰는 mock 액션아이템 추출기. 회의록 본문은 생성하지 않는다(#28).
+ * 출력 스키마는 live 모드와 동일하다.
+ */
+export function generateMockActions(input: GenerateInput): GeneratedActionItem[] {
+  const { sentences } = analyze(input.rawText);
+
   // 액션아이템: 할 일 신호어가 있는 문장(접두 제거된 정제 문장).
-  const actionItems: GeneratedActionItem[] = sentences
+  return sentences
     .filter((s) => /(하기로|해야|담당|진행|준비|작성|확인|점검|까지)/.test(s))
     .slice(0, 8)
     .map((s) => ({
@@ -55,13 +88,6 @@ export function generateMock(input: GenerateInput): GeneratedArtifacts {
       assignee: extractAssignee(s),
       dueDate: null,
     }));
-
-  return {
-    title,
-    attendees,
-    minutes: { summary, keyPoints, agenda, discussion, decisions },
-    actionItems,
-  };
 }
 
 /** "@핸들 [0:32]: 내용" → "내용" (발화 접두 제거). */
