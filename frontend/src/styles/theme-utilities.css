@@ -475,11 +475,19 @@
   }
 
   .calendar-day-btn {
-    @apply flex min-h-8 items-start justify-end rounded-lg border border-transparent p-1.5 text-xs font-medium transition-all duration-200;
+    @apply flex aspect-square w-full min-h-0 items-start justify-end rounded-lg border border-transparent p-1.5 text-xs font-medium transition-all duration-200;
   }
 
   .calendar-day-btn:not(:disabled):hover {
     @apply border-glass-border bg-bg-muted;
+  }
+
+  .calendar-day-btn--today:not(:disabled):hover {
+    @apply border-primary/50 bg-primary-subtle;
+  }
+
+  .calendar-day-btn--selected:not(:disabled):hover {
+    @apply border-primary bg-primary-subtle;
   }
 
   .calendar-day-btn--today {
