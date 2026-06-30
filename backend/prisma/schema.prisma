@@ -1,0 +1,65 @@
+// 회의 지식 허브(Meeting Intelligence Hub) — 데이터 계약 (팀 합의 단일 소스)
+//
+// 이 파일은 AGENTS.md의 "데이터 계약"을 Prisma로 구현한 것입니다.
+// 모양을 임의로 바꾸지 말 것 — 변경은 반드시 PR로 합의합니다.
+//
+// 스택: SQLite + Prisma. 로컬 `npm run dev` 시연용(배포 없음).
+//
+// [SQLite 제약에 따른 설계 결정]
+// - SQLite는 Prisma의 스칼라 리스트(String[])와 enum을 지원하지 않습니다.
+//   그래서 배열/구조화 데이터(attendees, minutes)는 Json 타입으로 저장하고,
+//   열거형(status)은 String + 애플리케이션 레벨 검증으로 다룹니다.
+// - Json 컬럼은 SQLite에 TEXT로 직렬화되어 저장됩니다.
+//
+// [버전 고정] Prisma 6.x 기준으로 작성/검증됨(`prisma validate` 통과).
+//   Prisma 7부터 datasource의 `url`이 prisma.config.ts로 분리되므로,
+//   공통 셋업(BE-2)에서 prisma 의존성을 "^6"으로 핀하는 것을 권장합니다.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// 회의 1건. 전사본(rawText)과 AI가 생성한 구조화 회의록(minutes)을 담는다.
+model Meeting {
+  id        String   @id @default(cuid())
+  title     String
+  /// 회의 일자. 입력값의 시각 정밀도가 불확실하므로 DateTime으로 저장한다.
+  date      DateTime
+  /// 참석자 목록. SQLite는 String[]를 지원하지 않아 Json 배열(["홍길동", ...])로 저장한다.
+  attendees Json
+  /// 사용자가 붙여넣은 원본 전사본 텍스트.
+  rawText   String
+  /// AI가 생성한 구조화 회의록.
+  /// JSON 형태: { "agenda": string[], "discussion": string, "decisions": string[] }
+  /// (안건[], 논의요약, 결정사항[])
+  minutes   Json
+
+  /// 1:N — 한 회의에서 여러 액션아이템이 파생된다.
+  actionItems ActionItem[]
+
+  createdAt DateTime @default(now())
+}
+
+/// 회의에서 파생된 액션아이템(할 일). Meeting에 N:1로 종속된다.
+model ActionItem {
+  id        String   @id @default(cuid())
+  meetingId String
+  meeting   Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+
+  content   String
+  /// 담당자. 전사본에서 불명확하면 "[담당자 확인 필요]" 플레이스홀더를 넣는다(AGENTS.md 규칙).
+  assignee  String?
+  /// 기한. 불명확하면 null로 두고 UI/문서에서는 "미정"으로 표기한다.
+  dueDate   DateTime?
+  /// 상태 값: 'todo' | 'done'. SQLite enum 미지원으로 String + 앱 레벨 검증.
+  status    String   @default("todo")
+
+  createdAt DateTime @default(now())
+
+  @@index([meetingId])
+}
